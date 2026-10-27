@@ -68,6 +68,21 @@ class OrderFlowTest extends TestCase
         $this->get('/order')->assertSee('Your list is empty');
     }
 
+    public function test_updating_or_removing_lines_keeps_the_details_already_typed(): void
+    {
+        $p = Product::factory()->create();
+        $q = Product::factory()->create(['name' => 'Other Line']);
+        $this->post('/order/list', ['product' => $p->slug]);
+        $this->post('/order/list', ['product' => $q->slug]);
+        $typed = ['name' => 'Shanice Joseph', 'business_name' => 'Gros Islet Minimart', 'delivery_address' => 'Bay Street, by the jetty', 'message' => 'Gate code 4411'];
+
+        $this->post('/order/list/update', $typed + ['cases' => [$p->id => 7, $q->id => 2]])->assertRedirect('/order');
+        $this->get('/order')->assertSee('Shanice Joseph')->assertSee('Bay Street, by the jetty')->assertSee('Gate code 4411')->assertSee('value="7"', false);
+
+        $this->post('/order/list/remove', $typed + ['product_id' => $q->id, 'cases' => [$p->id => 7, $q->id => 2]])->assertRedirect('/order');
+        $this->get('/order')->assertSee('Gros Islet Minimart')->assertSee('Shanice Joseph')->assertDontSee('Other Line');
+    }
+
     public function test_hidden_and_pharmaceutical_lines_cannot_be_added(): void
     {
         $hidden = Product::factory()->create(['published' => false]);

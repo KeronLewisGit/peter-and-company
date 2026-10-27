@@ -60,14 +60,26 @@ class OrderController extends Controller
         }
         OrderList::replace($items);
 
-        return to_route('order.show')->with('list_status', 'Order list updated.');
+        return to_route('order.show')->withInput($this->typedDetails($request))->with('list_status', 'Order list updated.');
     }
 
     public function remove(Request $request): RedirectResponse
     {
         OrderList::remove((int) $request->input('product_id'));
 
-        return to_route('order.show')->with('list_status', 'Removed from your order list.');
+        return to_route('order.show')->withInput($this->typedDetails($request))->with('list_status', 'Removed from your order list.');
+    }
+
+    /**
+     * "Update quantities" and "Remove" post the whole order form. Keep what the buyer has
+     * already typed (name, address, notes …) so they don't have to type it again; the
+     * quantities come from the list itself.
+     *
+     * @return array<string, mixed>
+     */
+    private function typedDetails(Request $request): array
+    {
+        return array_filter($request->except(['_token', 'cases', 'product_id', 'website']), fn ($v) => is_scalar($v));
     }
 
     public function store(Request $request): RedirectResponse
