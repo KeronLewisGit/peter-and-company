@@ -57,7 +57,7 @@ const CAPTIONS = {
   'sales-inbox': ['Order requests with per-type stages (New, Confirmed, Out for delivery, Delivered, Cancelled), filters, search by business, phone or reference, and CSV export. Demo requests.'],
   'sales-order': ['One order request: the buyer, their trade account and terms, the lines with case counts, other items, the delivery address and day. One tap to call, WhatsApp or email, a stage, an assignee, and a timeline of every call and change. Demo request.'],
   'credit-board': ['Credit control’s board: applications by stage, oldest first, with the requested terms and a flag on licensed pharmacies. Demo applications.'],
-  'credit-application': ['A pharmacy application as credit control sees it: licence and VAT numbers, references, the requested terms, and each document with “Open”. Every opening is logged. Demo application with placeholder documents.', 'Approving opens a PC- trade account and emails the customer the number; the timeline records every step.'],
+  'credit-application': ['An application as credit control sees it: licence and VAT numbers, references, the requested terms, and each document with “Open”. Every opening is logged. Demo application with placeholder documents.', 'Approving opens a PC- trade account and emails the customer the number; the timeline records every step.'],
   'sales-application': ['The same application as the trade desk sees it: the business and contact, but the credit details are hidden and each document is locked “Credit control only”. Administrators see a lock on the documents too.'],
   'credit-accounts': ['Trade accounts with status (active, on hold, closed) and terms. Credit control changes them; the trade desk can look an account up but not change it. Demo accounts.'],
   'sales-products': ['The catalogue editor for the trade desk: brand, product, division, case size and code, an optional pack shot, published and featured flags. There are no price or stock fields, on purpose.'],
@@ -226,6 +226,7 @@ const STYLE = `
   b, strong { font-weight: 700; }
   .page { page-break-after: always; break-after: page; height: 10in; display: flex; flex-direction: column; overflow: hidden; }
   .page:last-child { page-break-after: auto; break-after: auto; }
+  .page > * { flex-shrink: 0; }
   .eyebrow { font-size: 8pt; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--primary); margin: 0 0 4px; }
   .rack { display: inline-flex; margin: 0 0 10px; font-family: 'Schibsted', sans-serif; font-weight: 700; font-size: 7.6pt; letter-spacing: .14em; text-transform: uppercase; border-radius: 3px; overflow: hidden; box-shadow: inset 0 -3px 0 var(--stripe), 0 0 0 1.5px var(--ink); background: #fff; }
   .rack i { font-style: normal; background: var(--ink); color: #fff; padding: 5px 7px 7px; font-weight: 800; letter-spacing: .06em; } .rack span { padding: 5px 8px 7px; }
@@ -254,20 +255,20 @@ const STYLE = `
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .card { border: 1.5px solid var(--ink); border-radius: 5px; padding: 11px 13px; background: #fff; break-inside: avoid; box-shadow: inset 0 3px 0 var(--kraft-2); }
   .card h3 { font-size: 12pt; margin-bottom: 5px; }
-  .card ul { margin: 0; padding-left: 15px; } .card li { margin: 2px 0; }
+  .card ul { margin: 0; padding-left: 15px; font-size: 9.3pt; } .card li { margin: 1.5px 0; }
   .evidence { border-left: 4px solid var(--stripe); background: #fbf3ea; border-radius: 0 6px 6px 0; padding: 9px 12px 9px 28px; margin: 8px 0 10px; }
   .evidence li { margin: 3px 0; }
   .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin: 12px 0; } .stat { background: var(--crate); color: #fff; border-radius: 5px; padding: 11px 12px; } .stat b { display: block; font-family: 'Schibsted', sans-serif; font-weight: 800; font-size: 24pt; line-height: 1; color: #fff; } .stat span { display: block; margin-top: 4px; font-size: 8.4pt; color: rgba(255,255,255,.82); line-height: 1.3; }
   table.feat { width: 100%; border-collapse: collapse; font-size: 9.4pt; } table.feat td { border-bottom: 1px solid var(--line); padding: 9px 6px; vertical-align: top; } table.feat td:first-child { width: 20%; font-family: 'Schibsted', sans-serif; font-weight: 700; font-size: 12pt; }
   .pill-row { display: flex; flex-wrap: wrap; gap: 5px; } .pill { border: 1px solid #b9dcee; background: var(--sky-soft); color: #0a4f72; border-radius: 3px; padding: 2px 8px; font-size: 8.6pt; font-weight: 600; }
-  table.terms { width: 100%; border-collapse: collapse; font-size: 9.4pt; margin: 4px 0 8px; } table.terms th, table.terms td { text-align: left; vertical-align: top; padding: 6px 8px; border-bottom: 1px solid var(--line); } table.terms th { width: 31%; font-weight: 700; }
+  table.terms { width: 100%; border-collapse: collapse; font-size: 9.4pt; margin: 4px 0 8px; } table.terms th, table.terms td { text-align: left; vertical-align: top; padding: 4px 8px; border-bottom: 1px solid var(--line); } table.terms th { width: 31%; font-weight: 700; }
   table.terms thead th { font-size: 8pt; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); border-bottom: 1.5px solid var(--ink); }
   .price { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; align-items: stretch; margin: 6px 0 10px; }
   .price .big { background: var(--crate); color: #fff; border-radius: 6px; padding: 14px 16px; } .price .big b.amt { font-family: 'Schibsted', sans-serif; font-weight: 800; font-size: 27pt; line-height: 1; display: block; margin-bottom: 6px; } .price .big span { color: rgba(255,255,255,.86); font-size: 9.6pt; }
   .price .year { border: 2px solid var(--ink); border-radius: 6px; padding: 12px 14px; background: #fff; box-shadow: inset 0 -4px 0 var(--stripe); } .price .year p { margin: 0 0 4px; } .price .year .k { font-size: 7.8pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--primary); } .price .year .v { font-family: 'Schibsted', sans-serif; font-weight: 800; font-size: 15pt; line-height: 1.15; }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .two ul { margin: 0; padding-left: 16px; font-size: 9.4pt; } .two li { margin: 2.5px 0; }
-  .weeks { list-style: none; margin: 6px 0 10px; padding: 0; } .weeks li { display: grid; grid-template-columns: 0.9in 1fr; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); } .weeks b { font-family: 'Schibsted', sans-serif; font-weight: 800; font-size: 12.5pt; }
+  .weeks { list-style: none; margin: 6px 0 10px; padding: 0; } .weeks li { display: grid; grid-template-columns: 0.9in 1fr; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); } .weeks b { font-family: 'Schibsted', sans-serif; font-weight: 800; font-size: 12.5pt; }
   .next li { margin: 5px 0; }
   .contact { margin-top: 14px; background: var(--kraft); border: 2px solid var(--ink); border-radius: 6px; padding: 14px 16px; box-shadow: inset 0 -4px 0 var(--stripe); } .contact p { margin: 2px 0; } .contact a { color: var(--primary); }
   /* screenshot pages */
