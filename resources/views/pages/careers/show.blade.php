@@ -1,6 +1,6 @@
 <x-layouts.site :title="$vacancy->title" :description="$vacancy->summary">
     <x-page-hero :title="$vacancy->title" :lead="$vacancy->summary" code="H-02" :label="$vacancy->department" photo="warehouse-racking" alt="" :label-code="$vacancy->department" :label-line="$vacancy->location">
-        <nav class="mt-6 text-sm text-ink-3" aria-label="Breadcrumb"><a href="{{ route('careers.index') }}" class="text-link underline underline-offset-2">Careers</a> / {{ $vacancy->title }}</nav>
+        <nav class="mt-6 text-sm text-ink-3" aria-label="Breadcrumb"><a href="{{ route('careers.index') }}" class="inline-flex min-h-11 items-center text-link underline underline-offset-2">Careers</a> / {{ $vacancy->title }}</nav>
     </x-page-hero>
     <section class="wrap mt-12 grid gap-12 md:mt-16 lg:grid-cols-[1.25fr_0.75fr] lg:items-start">
         <div class="min-w-0 measure">

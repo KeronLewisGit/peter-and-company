@@ -70,7 +70,7 @@
         <div class="wrap flex min-h-10 items-center justify-between gap-4">
             <p class="truncate">Formerly Peter &amp; Company Distribution<span class="hidden md:inline"> · {{ $address['area'] }}, {{ $address['city'] }} · Trade customers only</span></p>
             <div class="flex flex-none items-center gap-1">
-                @if ($phone)<a href="{{ tel_href($phone) }}" class="inline-flex min-h-10 items-center gap-1.5 px-1 font-semibold text-white hover:underline"><x-icon name="phone" class="h-3.5 w-3.5" />{{ format_phone($phone) }}</a>@endif
+                @if ($phone)<a href="{{ tel_href($phone) }}" class="inline-flex min-h-11 items-center gap-1.5 px-1 font-semibold text-white hover:underline"><x-icon name="phone" class="h-3.5 w-3.5" />{{ format_phone($phone) }}</a>@endif
                 <a href="{{ route('login') }}" class="hidden min-h-10 items-center px-2 hover:text-white sm:inline-flex">Staff</a>
             </div>
         </div>

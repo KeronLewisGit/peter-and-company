@@ -23,7 +23,7 @@
                 <label class="mb-1.5 block text-sm font-semibold" for="password">Password</label>
                 <input class="a-input w-full" id="password" name="password" type="password" required autocomplete="current-password">
             </div>
-            <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="remember" value="1" class="h-4 w-4 accent-[var(--ink)]">Keep me signed in on this device</label>
+            <label class="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name="remember" value="1" class="h-4 w-4 accent-[var(--ink)]">Keep me signed in on this device</label>
             <button class="a-btn a-btn-primary w-full">Sign in</button>
         </form>
     </main>

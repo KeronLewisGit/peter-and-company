@@ -1,7 +1,7 @@
 @php($restricted = ! empty($division['restricted']))
 <x-layouts.site :title="$division['name']" :description="$division['blurb']" :og-image="$division['photo']">
     <x-page-hero :title="$division['name']" :lead="$division['blurb']" :code="$division['code']" label="Division" :photo="$division['photo']" alt="" :label-code="count($division['brands']).' brands'" :label-line="$division['short']">
-        <nav class="mt-6 text-sm text-ink-3" aria-label="Breadcrumb"><a href="{{ route('brands.index') }}" class="text-link underline underline-offset-2">Our brands</a> / {{ $division['short'] }}</nav>
+        <nav class="mt-6 text-sm text-ink-3" aria-label="Breadcrumb"><a href="{{ route('brands.index') }}" class="inline-flex min-h-11 items-center text-link underline underline-offset-2">Our brands</a> / {{ $division['short'] }}</nav>
     </x-page-hero>
 
     <section class="wrap mt-14 grid gap-12 md:mt-20 lg:grid-cols-[1.2fr_0.8fr]">
