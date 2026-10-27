@@ -1,56 +1,96 @@
-// Captures full-page screenshots of every screen (desktop + phone) for the client proposal.
-// Slices follow the page's own sections so a screenshot never breaks mid-block.
-// Usage: npm run proposal (the dev server must already be running; env: BASE_URL, STAFF_PASSWORD, VEHICLE, LEAD_ID, FINANCE_LEAD_ID)
+// Captures the screens for the client proposal: full-page desktop shots sliced on section
+// boundaries, and phone shots. Each demo role signs in in its own browser context.
+// Usage: npm run proposal   (env: BASE_URL, CHROME_PATH, ORDER_ID, ACCOUNT_ID)
+// Needs the dev server running (php artisan serve --port=8108) on the DemoSeeder data.
 import puppeteer from 'puppeteer-core';
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 
-const BASE = process.env.BASE_URL ?? 'http://127.0.0.1:8105';
+const BASE = process.env.BASE_URL ?? 'http://127.0.0.1:8108';
 const OUT = path.resolve('dist/proposal/shots');
 const CHROME = process.env.CHROME_PATH ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-const PASSWORD = process.env.STAFF_PASSWORD ?? 'password';
-const VEHICLE = process.env.VEHICLE ?? 'sample-2019-suzuki-vitara'; // demo stock with a two-photo gallery
-const LEAD = process.env.LEAD_ID ?? '87'; // a demo test-drive lead on a stock unit
-const FINANCE_LEAD = process.env.FINANCE_LEAD_ID ?? '1'; // a demo finance application with ID and pay slip
+const PASSWORD = process.env.DEMO_PASSWORD ?? 'password';
+const ACCOUNTS = { admin: 'admin@peterco.test', sales: 'sales@peterco.test', credit: 'credit@peterco.test', hr: 'hr@peterco.test' };
+
+// Pick demo records from the database: a recent order request with delivery day, and an open
+// pharmacy account application (with its placeholder documents).
+const ids = execFileSync('php', ['artisan', 'tinker', '--execute', `
+  $o = App\\Models\\Lead::where('type', 'order')->where('status', 'new')->whereNotNull('delivery_date')->latest()->first() ?? App\\Models\\Lead::where('type', 'order')->latest()->first();
+  $a = App\\Models\\Lead::where('type', 'account')->whereIn('status', ['new', 'reviewing'])->where('details->trade_type', 'pharmacy')->first() ?? App\\Models\\Lead::where('type', 'account')->whereIn('status', ['new', 'reviewing'])->first();
+  echo $o->id.' '.$a->id;`], { encoding: 'utf8' }).trim().split(/\s+/);
+const ORDER_ID = process.env.ORDER_ID ?? ids[0];
+const ACCOUNT_ID = process.env.ACCOUNT_ID ?? ids[1];
 
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 
-const PUBLIC = [
-  ['home', '/'], ['lineup', '/new'], ['model', '/new/suzuki/jimny'], ['inventory', '/pre-owned'], ['vehicle', `/pre-owned/${VEHICLE}`],
-  ['finance', '/finance'], ['service', '/service'], ['about', '/about'], ['contact', '/contact'],
+// [name, url, account]
+const SCREENS = [
+  ['home', '/'], ['brands', '/brands'], ['division', '/brands/wines-spirits'], ['catalogue', '/catalogue'], ['order', '/order', 'guest-list'],
+  ['trade-account', '/trade-account'], ['principals', '/principals'], ['careers', '/careers'], ['about', '/about'], ['contact', '/contact'],
+  ['login', '/login'],
+  ['sales-dashboard', '/admin', 'sales'],
+  ['sales-inbox', '/admin/leads?type=order', 'sales'],
+  ['sales-order', `/admin/leads/${ORDER_ID}`, 'sales'],
+  ['credit-board', '/admin/credit', 'credit'],
+  ['credit-application', `/admin/leads/${ACCOUNT_ID}`, 'credit'],
+  ['sales-application', `/admin/leads/${ACCOUNT_ID}`, 'sales'],
+  ['credit-accounts', '/admin/accounts', 'credit'],
+  ['sales-products', '/admin/products', 'sales'],
+  ['hr-dashboard', '/admin', 'hr'],
+  ['hr-vacancies', '/admin/vacancies', 'hr'],
+  ['admin-staff', '/admin/users', 'admin'],
 ];
-const FLOWS = [
-  ['test-drive', `/test-drive?vehicle=${VEHICLE}`], ['finance-apply', '/finance/apply'], ['trade-in', '/trade-in'], ['parts', '/parts'],
+// Long lists are cut after this many slices: the first screens show the idea.
+const MAX_SLICES = { catalogue: 2, 'sales-inbox': 1, 'credit-accounts': 1, 'sales-products': 1 };
+const MOBILE = [
+  ['m-home', '/'], ['m-catalogue', '/catalogue', 'guest-list'], ['m-order', '/order', 'guest-list'],
+  ['m-trade-account', '/trade-account'], ['m-sales-dashboard', '/admin', 'sales'], ['m-sales-order', `/admin/leads/${ORDER_ID}`, 'sales'],
 ];
-const ADMIN_PAGES = [
-  ['admin-login', '/login'],
-  ['admin-dashboard', '/admin'], ['admin-inbox', '/admin/leads'], ['admin-lead', `/admin/leads/${LEAD}`],
-  ['admin-service', '/admin/service'], ['admin-finance', '/admin/finance'], ['admin-vehicles', '/admin/vehicles'],
-  ['admin-vehicle-edit', `/admin/vehicles/${VEHICLE}/edit`], ['admin-users', '/admin/users'], ['admin-settings', '/admin/settings'],
-];
-const FINANCE_PAGES = [['admin-lead-finance', `/admin/leads/${FINANCE_LEAD}`]];
-const MOBILE = [['m-home', '/'], ['m-vehicle', `/pre-owned/${VEHICLE}`], ['m-service', '/service#book'], ['m-test-drive', '/test-drive'], ['m-admin-dashboard', '/admin'], ['m-admin-lead', `/admin/leads/${LEAD}`]];
 
-const browser = await puppeteer.launch({ executablePath: CHROME, headless: 'new', protocolTimeout: 60000, args: ['--hide-scrollbars', '--no-sandbox'] });
-const page = await browser.newPage();
-await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }, { name: 'prefers-color-scheme', value: 'light' }]);
+const browser = await puppeteer.launch({ executablePath: CHROME, headless: 'new', protocolTimeout: 90000, args: ['--hide-scrollbars', '--no-sandbox'] });
 
-async function settle() {
+/** One isolated browser context per account, signed in once. "guest-list" is a visitor with three lines on the order list. */
+const pages = {};
+async function pageFor(account) {
+  const key = account ?? 'guest';
+  if (pages[key]) return pages[key];
+  const ctx = await browser.createBrowserContext();
+  const page = await ctx.newPage();
+  await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }, { name: 'prefers-color-scheme', value: 'light' }]);
+  await page.setViewport({ width: 1440, height: 900 });
+  if (key === 'guest-list') {
+    for (const [i, cases] of [[0, 10], [2, 4], [5, 6]]) {
+      await page.goto(BASE + '/catalogue', { waitUntil: 'networkidle0' });
+      await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle0' }), page.evaluate((i, cases) => {
+        const f = document.querySelectorAll('form[action$="/order/list"]')[i];
+        f.querySelector('input[name=cases]').value = cases;
+        f.requestSubmit();
+      }, i, cases)]);
+    }
+  } else if (account) {
+    await page.goto(BASE + '/login', { waitUntil: 'networkidle0' });
+    await page.type('input[name=email]', ACCOUNTS[account]);
+    await page.type('input[name=password]', PASSWORD);
+    await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle0' }), page.$eval('input[name=password]', (i) => i.form.requestSubmit())]);
+    if (new URL(page.url()).pathname === '/login') throw new Error(`Sign-in failed for ${account}`);
+  }
+  return (pages[key] = page);
+}
+
+async function settle(page) {
   await page.evaluate(async () => {
-    // Scroll-reveal blocks and the rolling odometer numerals: show their final state.
-    document.querySelectorAll('[data-reveal]').forEach(e => e.classList.add('is-visible'));
-    document.querySelectorAll('.odo.roll').forEach(e => e.classList.remove('roll'));
-    // Lazy images below the fold would be blank in a full-page capture: load them all now.
-    document.querySelectorAll('img[loading="lazy"]').forEach(i => { i.loading = 'eager'; });
-    window.scrollTo(0, document.body.scrollHeight); await new Promise(r => setTimeout(r, 400)); window.scrollTo(0, 0);
+    document.querySelectorAll('[data-reveal]').forEach((e) => e.classList.add('is-visible'));
+    document.querySelectorAll('img[loading="lazy"]').forEach((i) => { i.loading = 'eager'; });
+    for (let y = 0; y < document.body.scrollHeight; y += 700) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 40)); }
+    window.scrollTo(0, 0);
     await Promise.race([
-      Promise.all([...document.images].filter(i => !i.complete).map(i => new Promise(r => { i.onload = i.onerror = r; }))),
-      new Promise(r => setTimeout(r, 5000)),
+      Promise.all([...document.images].filter((i) => !i.complete).map((i) => new Promise((r) => { i.onload = i.onerror = r; }))),
+      new Promise((r) => setTimeout(r, 3000)),
     ]);
-    await Promise.all([...document.images].map(i => i.decode?.().catch(() => {})));
   });
-  await new Promise(r => setTimeout(r, 500));
+  await new Promise((r) => setTimeout(r, 400));
 }
 
 /**
@@ -58,41 +98,39 @@ async function settle() {
  * page budget are replaced by their children, recursively, so slices follow real section
  * boundaries instead of cutting wherever the pixel budget runs out.
  */
-async function measureBlocks(maxH) {
+async function measureBlocks(page, maxH) {
   return page.evaluate((maxH) => {
     const rect = (el) => { const r = el.getBoundingClientRect(); return { top: Math.round(r.top + window.scrollY), bottom: Math.round(r.bottom + window.scrollY) }; };
     const visible = (el) => { const cs = getComputedStyle(el); const r = el.getBoundingClientRect(); return cs.display !== 'none' && cs.visibility !== 'hidden' && r.height > 24 && cs.position !== 'fixed'; };
     const skip = (el) => el.matches('script, style, template, [x-cloak], [aria-hidden="true"]:not(section)');
     const label = (el) => {
-      const hs = [...el.querySelectorAll('h1, h2, h3')].filter(h => visible(h) && h.closest('nav, footer, [aria-hidden="true"]') === null);
+      const hs = [...el.querySelectorAll('h1, h2, h3')].filter((h) => visible(h) && h.closest('nav, footer, [aria-hidden="true"]') === null);
       const seen = new Set();
-      const text = (h) => { const c = h.cloneNode(true); c.querySelectorAll('[aria-hidden="true"], template, .sr-only').forEach(e => e.remove()); return c.textContent.replace(/\s+/g, ' ').trim(); };
-      return hs.map(text).filter(t => t && !seen.has(t.toLowerCase()) && seen.add(t.toLowerCase())).slice(0, 4);
+      return hs.map((h) => h.textContent.replace(/\s+/g, ' ').trim()).filter((t) => t && !seen.has(t.toLowerCase()) && seen.add(t.toLowerCase())).slice(0, 4);
     };
     const explode = (el) => {
       const r = { ...rect(el), labels: label(el) };
       if (r.bottom - r.top <= maxH) return [r];
-      const kids = [...el.children].filter(k => !skip(k) && visible(k));
+      const kids = [...el.children].filter((k) => !skip(k) && visible(k));
       if (kids.length === 0) return [{ top: r.top, bottom: r.bottom, labels: r.labels }];
-      if (kids.length === 1) return explode(kids[0]); // wrapper div – look inside it
+      if (kids.length === 1) return explode(kids[0]);
       return kids.flatMap(explode);
     };
-    // Sales desk layout: the content column is <main id="content">; public layout: body-level header/main/footer.
+    // Back office: the content column is <main id="content"> beside a fixed sidebar.
     const adminMain = document.querySelector('body.admin main#content');
     const roots = adminMain
-      ? [...adminMain.children].map(el => ({ el, trailing: false }))
-      : [...document.body.children].filter(el => ['HEADER', 'MAIN', 'FOOTER', 'DIV', 'SECTION'].includes(el.tagName) && !skip(el) && visible(el))
-          .flatMap(el => el.tagName === 'MAIN' ? [...el.children].map(k => ({ el: k, trailing: false })) : [{ el, trailing: el.tagName === 'FOOTER' || (el.tagName === 'SECTION' && el.previousElementSibling?.tagName === 'MAIN') }]);
-    const blocks = roots.filter(r => visible(r.el)).flatMap(r => explode(r.el).map(b => ({ ...b, trailing: r.trailing }))).filter(b => b.bottom > b.top).sort((a, b) => a.top - b.top);
-    // merge overlaps / fill gaps so nothing is lost between blocks
+      ? [...adminMain.children].map((el) => ({ el, trailing: false }))
+      : [...document.body.children].filter((el) => ['HEADER', 'MAIN', 'FOOTER', 'DIV', 'SECTION'].includes(el.tagName) && !skip(el) && visible(el))
+          .flatMap((el) => el.tagName === 'MAIN' ? [...el.children].map((k) => ({ el: k, trailing: false })) : [{ el, trailing: el.tagName === 'FOOTER' }]);
+    const blocks = roots.filter((r) => visible(r.el)).flatMap((r) => explode(r.el).map((b) => ({ ...b, trailing: r.trailing }))).filter((b) => b.bottom > b.top).sort((a, b) => a.top - b.top);
     const merged = [];
     for (const b of blocks) {
       const last = merged[merged.length - 1];
-      if (last && b.top < last.bottom - 2) { last.bottom = Math.max(last.bottom, b.bottom); last.trailing = last.trailing && b.trailing; last.labels = [...new Set([...last.labels, ...b.labels])]; } else merged.push({ ...b, labels: [...b.labels] }); // merge true overlaps only
+      if (last && b.top < last.bottom - 2) { last.bottom = Math.max(last.bottom, b.bottom); last.trailing = last.trailing && b.trailing; last.labels = [...new Set([...last.labels, ...b.labels])]; } else merged.push({ ...b, labels: [...b.labels] });
     }
     const docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
     if (merged.length) { merged[0].top = 0; merged[merged.length - 1].bottom = Math.max(merged[merged.length - 1].bottom, docH); for (let i = 1; i < merged.length; i++) merged[i].top = merged[i - 1].bottom; }
-    return { blocks: merged, docH, docW: document.documentElement.clientWidth };
+    return { blocks: merged, docH };
   }, maxH);
 }
 
@@ -110,10 +148,9 @@ function packBlocks(blocks, maxH, docH) {
     } else cur = { top: b.top, bottom: b.bottom, labels: [...(b.labels ?? [])] };
   }
   if (cur) groups.push(cur);
-  // swallow a tiny trailing sliver (e.g. a thin footer strip) into the previous group when it fits
   if (groups.length > 1) {
     const last = groups[groups.length - 1], prev = groups[groups.length - 2];
-    if (last.bottom - last.top < maxH * 0.15 && last.bottom - prev.top <= maxH * 1.05) { prev.bottom = last.bottom; prev.labels = [...new Set([...prev.labels, ...last.labels])]; groups.pop(); }
+    if (last.bottom - last.top < maxH * 0.15 && last.bottom - prev.top <= maxH * 1.3) { prev.bottom = last.bottom; prev.labels = [...new Set([...prev.labels, ...last.labels])]; groups.pop(); }
   }
   groups[groups.length - 1].bottom = Math.min(groups[groups.length - 1].bottom, docH);
   return groups;
@@ -121,60 +158,40 @@ function packBlocks(blocks, maxH, docH) {
 
 const RATIO = 1.08; // slice height ÷ width that fits a letter page beneath the heading and bullets
 
-async function shoot(name, url, { width = 1440, height = 900, fullPage = true, mobile = false } = {}) {
+async function shoot(name, url, account, { width = 1440, height = 900, mobile = false } = {}) {
+  const page = await pageFor(account);
   await page.setViewport({ width, height, deviceScaleFactor: mobile ? 2 : 1.25, isMobile: mobile, hasTouch: mobile });
   await page.goto(BASE + url, { waitUntil: 'networkidle0' });
-  await settle();
-  const files = []; const labels = [];
-  if (!fullPage) {
-    const hash = new URL(BASE + url).hash;
-    if (hash) { await page.evaluate((h) => document.querySelector(h)?.scrollIntoView(), hash); await new Promise(r => setTimeout(r, 300)); }
+  await settle(page);
+  if (mobile) {
     const file = path.join(OUT, `${name}.jpg`);
-    await page.screenshot({ path: file, type: 'jpeg', quality: 72 });
-    files.push(file);
-    console.log(`✓ ${name} viewport`);
-    return { name, url, chunks: files.map(f => path.resolve(f)), labels: [[]], sizes: [[width, height]], mobile };
+    await page.screenshot({ path: file, type: 'jpeg', quality: 76 });
+    console.log(`✓ ${name} (phone)`);
+    return { name, url, chunks: [file], labels: [[]], mobile };
   }
   const maxH = Math.round(width * RATIO);
-  let { blocks, docH } = await measureBlocks(maxH);
-  if (name !== 'home') { blocks = blocks.filter(b => !b.trailing); docH = blocks[blocks.length - 1].bottom; } // CTA band + footer are shown once (home)
-  const groups = packBlocks(blocks, maxH, docH);
+  let { blocks, docH } = await measureBlocks(page, maxH);
+  if (name !== 'home') { blocks = blocks.filter((b) => !b.trailing); docH = blocks[blocks.length - 1].bottom; } // the footer is shown once (home)
+  const groups = packBlocks(blocks, maxH, docH).slice(0, MAX_SLICES[name] ?? 99);
+  // The back-office sidebar is position: fixed, so it only covers one viewport: stretch the viewport to the page.
+  if (await page.$('body.admin')) {
+    await page.setViewport({ width, height: Math.max(height, Math.ceil(docH)), deviceScaleFactor: 1.25 });
+    await new Promise((r) => setTimeout(r, 300));
+  }
+  const files = []; const labels = [];
   for (const [i, g] of groups.entries()) {
     const file = path.join(OUT, groups.length > 1 ? `${name}-${i}.jpg` : `${name}.jpg`);
-    await page.screenshot({ path: file, type: 'jpeg', quality: 72, captureBeyondViewport: true, clip: { x: 0, y: g.top, width, height: g.bottom - g.top } });
+    await page.screenshot({ path: file, type: 'jpeg', quality: 74, captureBeyondViewport: true, clip: { x: 0, y: g.top, width, height: g.bottom - g.top } });
     files.push(file); labels.push(g.labels ?? []);
   }
-  console.log(`✓ ${name} → ${groups.length} slice(s): ${groups.map(g => (g.labels ?? []).join(' | ') || '(no heading)').join('  ·  ')}`);
-  return { name, url, chunks: files.map(f => path.resolve(f)), labels, sizes: groups.map(g => [width, g.bottom - g.top]), w: width, h: docH };
-}
-
-async function login(email) {
-  await page.goto(BASE + '/login', { waitUntil: 'networkidle0' });
-  await page.type('input[name=email]', email);
-  await page.type('input[name=password]', PASSWORD);
-  await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle0' }), page.click('form button')]);
-}
-
-async function logout() {
-  await page.goto(BASE + '/admin', { waitUntil: 'networkidle0' });
-  await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle0' }), page.evaluate(() => document.querySelector('form[action$="/logout"]').submit())]);
+  console.log(`✓ ${name} → ${groups.length} slice(s): ${groups.map((g) => (g.labels ?? []).join(' | ') || '(no heading)').join('  ·  ')}`);
+  return { name, url, chunks: files, labels };
 }
 
 const shots = [];
-for (const [n, u] of [...PUBLIC, ...FLOWS]) shots.push(await shoot(n, u));
-// Staff screens are captured at a 1280 × 1000 laptop size: their content is short, and the larger
-// type and taller frame fill a letter page instead of leaving its lower half blank.
-const DESK = { width: 1280, height: 1000 };
-shots.push(await shoot(...ADMIN_PAGES[0], DESK));
-for (const [n, u] of MOBILE.filter(([n]) => !n.startsWith('m-admin'))) shots.push(await shoot(n, u, { width: 390, height: 844, mobile: true, fullPage: false }));
-await login('admin@hadeed.test');
-for (const [n, u] of ADMIN_PAGES.slice(1)) shots.push(await shoot(n, u, { ...DESK, fullPage: !u.endsWith('/finance') }));
-for (const [n, u] of MOBILE.filter(([n]) => n.startsWith('m-admin'))) shots.push(await shoot(n, u, { width: 390, height: 844, mobile: true, fullPage: false }));
-await logout();
-// The finance role is the only one that can open ID and pay slips, so that view is captured as finance.
-await login('finance@hadeed.test');
-for (const [n, u] of FINANCE_PAGES) shots.push(await shoot(n, u));
-await logout();
-fs.writeFileSync(path.join(OUT, 'chunks.json'), JSON.stringify(Object.fromEntries(shots.map(s => [s.name, s])), null, 1));
+const DESK = { width: 1280, height: 1000 }; // staff screens: a laptop size, so their short pages fill a letter page
+for (const [n, u, a] of SCREENS) shots.push(await shoot(n, u, a, a && a !== 'guest-list' ? DESK : {}));
+for (const [n, u, a] of MOBILE) shots.push(await shoot(n, u, a, { width: 390, height: 844, mobile: true }));
+fs.writeFileSync(path.join(OUT, 'chunks.json'), JSON.stringify(Object.fromEntries(shots.map((s) => [s.name, s])), null, 1));
 await browser.close();
 console.log('done');
