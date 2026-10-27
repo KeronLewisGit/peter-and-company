@@ -19,7 +19,7 @@ The current site (acadostlucia.com) is a brochure with a contact form. This buil
   - **Credit**: trade account applications, the credit board, and approving an application, which opens a `PC-` trade account and emails the customer the number. The only role that can open trade licences, VAT certificates, IDs, pharmacy licences and bank references. Every opening is logged on the request's timeline.
   - **HR**: job applications, CVs (also open to admin) and vacancies.
 
-  The dashboard leads with one number: requests still new after their response target (order requests 2 hours, enquiries 24 hours, account applications and principals 48 hours, job applications 5 days). It also shows up to four trend tiles for the role, requests per day, a breakdown by type, the oldest new requests and requested deliveries. The inbox has per-type stages, filters, search (press `/`) and CSV export. Each request page has the stage, the assignee, the delivery day for orders, a notes timeline and one-tap call, WhatsApp or email.
+  The dashboard leads with one number: requests still new, with nobody having spoken to the customer, after their response target (order requests 2 hours, enquiries 24 hours, account applications and principals 48 hours, job applications 5 days). It also shows up to four trend tiles for the role, requests per day, a breakdown by type, the oldest new requests and requested deliveries. The inbox has per-type stages, filters, search (press `/`) and CSV export. Each request page has the stage, the assignee, the delivery day for orders, a notes timeline and one-tap call, WhatsApp or email.
 
 ## Requirements
 
