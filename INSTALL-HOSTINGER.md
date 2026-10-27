@@ -19,7 +19,7 @@ Before you start, do steps 1–4 of **Prepare hPanel** in Option B below (domain
 
 1. In File Manager, empty `public_html/` (delete Hostinger's `default.php`), upload the zip to `public_html` and extract it there.
 2. Copy `peterco-app/.env.example` to `peterco-app/.env`. Fill in the database, mail and `PETERCO_*` values, and set `SETUP_TOKEN` to a long random string.
-3. Open `https://www.peterandcompanydistribution.com/setup.php?token=YOUR_TOKEN`. It generates the app key, migrates, creates the first staff account and deletes itself.
+3. Open `https://acadostlucia.com/setup.php?token=YOUR_TOKEN`. It generates the app key, migrates, creates the first staff account and deletes itself.
 4. Remove `SETUP_TOKEN` from `.env`.
 
 To update later, build a new zip, and upload and extract it over the old files. `peterco-app/.env`, `peterco-app/storage/` (customer uploads, logs) and `uploads/` are not in the zip, so they are kept. Then visit `/setup.php?token=…` again if the release has new migrations (add a `SETUP_TOKEN` first; once a staff account exists the installer only migrates and never creates or resets accounts), or run `php artisan migrate --force` over SSH from `peterco-app/`.
@@ -43,10 +43,10 @@ public_html/
 
 ### 1. Prepare hPanel (one time)
 
-1. **Domain and SSL.** Point `peterandcompanydistribution.com` at the hosting plan. The current site has no valid certificate for this domain, so this step fixes the browser "Not secure" warning, then go to hPanel → Security → SSL and install the free certificate. The `.htaccess` redirects every request to HTTPS, so the site will not load until the certificate is active.
+1. **Domain and SSL.** Point `acadostlucia.com` (and `www`) at the hosting plan; change only the web (A) records and leave the MX and SPF records alone, because the company's email runs on Microsoft 365. Then go to hPanel → Security → SSL and install the free certificate. The `.htaccess` redirects every request to HTTPS, so the site will not load until the certificate is active.
 2. **PHP version.** Go to hPanel → Advanced → PHP Configuration and choose **PHP 8.3** (8.4 also works). Leave the default extensions enabled. `pdo_mysql`, `mbstring`, `openssl`, `fileinfo`, `tokenizer` and `gd` (catalogue photo resizing) are required.
 3. **Database.** Go to hPanel → Databases → MySQL Databases and create a database and a user. Write down the full names, which include the `u123456789_` prefix, and the password.
-4. **Mailbox.** Go to hPanel → Emails and create `sales@peterandcompanydistribution.com`. The site sends new-lead notifications to staff and booking confirmations to customers through this mailbox.
+4. **Sending mailbox.** The site emails staff about new requests and sends customers their reference number and, on approval, their trade account number. acadostlucia.com mail is on Microsoft 365 and its SPF record only allows Microsoft's servers, so mail sent through Hostinger's SMTP as an @acadostlucia.com address would fail SPF. Ask the company's IT for a Microsoft 365 mailbox with SMTP AUTH enabled (e.g. `website@acadostlucia.com`) and set `MAIL_HOST=smtp.office365.com`, `MAIL_PORT=587`, `MAIL_SCHEME=null` (STARTTLS), or have them add Hostinger to the SPF record before using a Hostinger mailbox.
 5. **SSH.** Go to hPanel → Advanced → SSH Access, enable it, and note the IP, port (usually `65002`) and username.
 
 ### 2. Connect the private GitHub repository
@@ -66,7 +66,7 @@ The repository (`YOUR-GITHUB-USER/peter-and-company`) is private, so Hostinger n
 
 ```bash
 ssh -p 65002 u123456789@YOUR_SERVER_IP
-cd ~/domains/peterandcompanydistribution.com/public_html
+cd ~/domains/acadostlucia.com/public_html
 
 php -v                                   # must be 8.3+. If not, replace `php` below with /opt/alt/php83/usr/bin/php
 ls vendor/autoload.php                   # if this is missing, Composer did not run: see the next line
@@ -83,7 +83,7 @@ php artisan optimize
 
 `SETUP_TOKEN` and the `ADMIN_*` lines in `.env` are only used by the zip installer (Option A). Leave them empty here.
 
-Open `https://www.peterandcompanydistribution.com` and sign in at `/login` to check the install.
+Open `https://acadostlucia.com` and sign in at `/login` to check the install.
 
 ### 4. Turn on automatic deploys (optional)
 
@@ -96,7 +96,7 @@ Go to hPanel → GIT → your repository → **Auto Deployment** and copy the we
 3. Over SSH:
 
    ```bash
-   cd ~/domains/peterandcompanydistribution.com/public_html
+   cd ~/domains/acadostlucia.com/public_html
    composer install --no-dev --optimize-autoloader --no-interaction
    php artisan migrate --force
    php artisan optimize
@@ -120,7 +120,7 @@ Go to hPanel → GIT → your repository → **Auto Deployment** and copy the we
 
 ## Check after install
 
-- `https://www.peterandcompanydistribution.com/.env`, `/.git/config` and `/composer.json` must return 403 or 404. For Option A, check `/peterco-app/` as well.
+- `https://acadostlucia.com/.env`, `/.git/config` and `/composer.json` must return 403 or 404. For Option A, check `/peterco-app/` as well.
 - `http://` must redirect to `https://`.
 - From a phone, add catalogue lines to an order list and send it, apply for a trade account with small PDFs, send a principal enquiry and a job application with a CV. Each should show a reference number, email the customer, and email the matching `PETERCO_NOTIFY_*` inbox.
 - Sign in as a **Credit** user and open the trade licence and ID from a trade account application. Then sign in as an administrator and confirm the same files show a lock ("Credit control only"). Sign in as **HR** and open a CV; a sales user must not see applications at all. Confirm `/peterco-app/storage/app/private/leads/` returns 403 (Option A) or that `storage/` is unreachable (Option B).

@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'Acado St. Lucia'),
 
     /*
     |--------------------------------------------------------------------------
@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'timezone' => env('APP_TIMEZONE', 'America/New_York'),
+    'timezone' => env('APP_TIMEZONE', 'America/St_Lucia'),
 
     /*
     |--------------------------------------------------------------------------

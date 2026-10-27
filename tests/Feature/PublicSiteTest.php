@@ -77,4 +77,16 @@ class PublicSiteTest extends TestCase
     {
         $this->get('/')->assertHeader('X-Content-Type-Options', 'nosniff')->assertHeader('X-Frame-Options');
     }
+
+    public function test_deploy_defaults_use_st_lucia_time_and_the_new_name(): void
+    {
+        // Without APP_TIMEZONE in .env, delivery days and response targets must still run on St Lucia time.
+        $this->assertStringContainsString("env('APP_TIMEZONE', 'America/St_Lucia')", (string) file_get_contents(config_path('app.php')));
+        $env = (string) file_get_contents(base_path('deploy/env.production.example'));
+        $this->assertStringContainsString('APP_TIMEZONE=America/St_Lucia', $env);
+        // Customer emails are sent "from" APP_NAME: the company was renamed in February 2025.
+        $this->assertStringContainsString('APP_NAME="Acado St. Lucia"', $env);
+        $this->assertStringContainsString('APP_URL=https://acadostlucia.com', $env);
+        $this->assertStringNotContainsString('peterandcompanydistribution', $env);
+    }
 }
