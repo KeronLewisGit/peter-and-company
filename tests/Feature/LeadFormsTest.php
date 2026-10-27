@@ -121,6 +121,9 @@ class LeadFormsTest extends TestCase
     {
         $this->post('/trade-account', $this->account(['message' => 'Our account number is 1234567890123', 'bank_name' => 'Bank 001234567890']))
             ->assertSessionHasErrors();
+        // Any free-text box, not only the message and bank name.
+        $this->post('/trade-account', $this->account(['address' => 'Rodney Bay, acct 4012 8888 8888 1881']))->assertSessionHasErrors('address');
+        $this->post('/trade-account', $this->account(['terms' => 'credit', 'ref1_name' => 'Card 4111-1111-1111-1111', 'ref1_phone' => '758-450-1111']))->assertSessionHasErrors('ref1_name');
         $this->assertSame(0, Lead::count());
     }
 

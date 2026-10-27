@@ -100,6 +100,9 @@ class OrderFlowTest extends TestCase
         $sunday = today()->next('Sunday')->toDateString();
         $this->post('/order', $this->order(['other_items' => 'x', 'delivery_date' => $sunday]))->assertSessionHasErrors('delivery_date');
         $this->post('/order', $this->order(['other_items' => 'x', 'delivery_date' => today()->addDays(40)->toDateString()]))->assertSessionHasErrors('delivery_date');
+        // A malformed date gets one message, not two.
+        $this->post('/order', $this->order(['phone' => '758-450-7777', 'other_items' => 'x', 'delivery_date' => '2026-13-45']))->assertSessionHasErrors('delivery_date');
+        $this->assertCount(1, session('errors')->get('delivery_date'));
         $this->assertSame(0, Lead::count());
     }
 

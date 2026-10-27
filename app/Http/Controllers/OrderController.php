@@ -132,7 +132,7 @@ class OrderController extends Controller
                 $v->errors()->add('cases', 'Your order list is empty. Add products from the catalogue, or list what you need under "Other items".');
             }
             $date = input_string($request->input('delivery_date'));
-            if ($date !== '' && ! Delivery::isRequestable($date)) {
+            if ($date !== '' && ! $v->errors()->has('delivery_date') && ! Delivery::isRequestable($date)) {
                 $v->errors()->add('delivery_date', 'Choose a working day in the next '.peterco('delivery.days_ahead').' days, or "No preference".');
             }
         });
