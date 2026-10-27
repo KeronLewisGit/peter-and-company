@@ -89,4 +89,14 @@ class PublicSiteTest extends TestCase
         $this->assertStringContainsString('APP_URL=https://acadostlucia.com', $env);
         $this->assertStringNotContainsString('peterandcompanydistribution', $env);
     }
+
+    public function test_facts_match_the_sources(): void
+    {
+        // The timeline heading counts from 1891 rather than a number typed in a given year.
+        $this->get('/about')->assertOk()->assertSee((now()->year - 1891).' years in six dates.');
+        // Brands from the division pages' logo grids (rechecked 27 Oct 2026); "Children's DPH" is not on them.
+        $this->get('/brands/wines-spirits')->assertSee('Campari')->assertSee('Santa Margherita');
+        $this->get('/brands/food')->assertSee('DAK');
+        $this->get('/brands/pharmaceutical')->assertSee('DPH')->assertDontSee('Children&#039;s DPH', false);
+    }
 }

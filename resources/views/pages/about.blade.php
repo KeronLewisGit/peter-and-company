@@ -23,7 +23,7 @@
 
     <section class="wrap mt-16 md:mt-24" aria-labelledby="time-title">
         <x-rack-tag code="A-02" label="Timeline" />
-        <h2 id="time-title" class="display-2 mt-4">134 years in six dates.</h2>
+        <h2 id="time-title" class="display-2 mt-4">{{ now()->year - (int) peterco('founded') }} years in six dates.</h2>
         <ol class="mt-10 border-l-2 border-ink pl-6 sm:pl-10">
             @foreach (peterco('history') as $h)
                 <li class="relative pb-10 last:pb-0">

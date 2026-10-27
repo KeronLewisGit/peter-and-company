@@ -3,6 +3,7 @@
 import puppeteer from 'puppeteer-core';
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const CHROME = process.env.CHROME_PATH ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const SHOTS = path.resolve('dist/proposal/shots');
@@ -12,7 +13,12 @@ const OUT_PDF = path.resolve('dist/proposal/Peter-and-Company-Website-Proposal.p
 const MAX_BYTES = 9.5 * 1024 * 1024;
 const DATE = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 const TITLE = 'Acado St. Lucia (Peter & Company Distribution) – Trade Website Proposal';
-const TESTS = process.env.TEST_COUNT ?? '49';
+// Counted from the code, so the proposal never quotes a stale number.
+const countTests = (dir) => fs.readdirSync(dir, { withFileTypes: true }).reduce((n, e) => n + (e.isDirectory()
+  ? countTests(path.join(dir, e.name))
+  : e.name.endsWith('Test.php') ? (fs.readFileSync(path.join(dir, e.name), 'utf8').match(/public function test_/g) ?? []).length : 0), 0);
+const TESTS = process.env.TEST_COUNT ?? String(countTests(path.resolve('tests')));
+const BRANDS = execFileSync('php', ['artisan', 'tinker', '--execute', "echo collect(config('peterco.divisions'))->sum(fn ($d) => count($d['brands']));"], { encoding: 'utf8' }).trim();
 const img = (f) => 'file://' + f;
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 
@@ -43,7 +49,7 @@ const CAPTIONS = {
     'History since 1891, then the panels for brand owners and job seekers.',
     'The call to action for new trade customers, and the footer with the head-office number, address and social links.',
   ],
-  brands: ['Every division on one page with its blurb, dated facts from The Voice (Hennessy for 35+ years, Carib Brewery exclusive), and the full brand list as text – 152 brands read from the company’s own division pages. No brand-owner logos are used.', 'The remaining divisions, including Pharmaceuticals, marked for licensed buyers only.'],
+  brands: [`Every division on one page with its blurb, dated facts from The Voice (Hennessy for 35+ years, Carib Brewery exclusive), and the full brand list as text – ${BRANDS} brands read from the company’s own division pages. No brand-owner logos are used.`, 'The remaining divisions, including Pharmaceuticals, marked for licensed buyers only.'],
   division: ['A division page: the brands, the categories, and the catalogue lines in that division. Brand names are text only.', 'Division page, continued.'],
   catalogue: ['The trade catalogue: filter by division, brand and category or search, and add cases to the order list from any line. Sample listings, unpriced, using only brands the company lists.', 'Catalogue, continued: every line shows its case size and a “Sample listing” badge in the demo.'],
   order: ['The order list after a buyer added three lines: change quantities or remove a line, add items that aren’t in the catalogue, and tick pharmaceuticals only with an approved licensed account.', 'Who is ordering, the trade account number (optional; typed in any format), district, delivery address and a preferred working day. The buyer gets a reference number on screen and by email.'],
@@ -311,17 +317,17 @@ const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>
 <section class="page prose">
   ${tag('01', 'Executive summary')}
   <h1>Why rebuild now</h1>
-  <p>Peter &amp; Company has traded in Castries since 1891, and as Acado St. Lucia it is one of the island’s largest distributors of fast-moving consumer goods: wines and spirits, Carib and the Brewery range, food, household and personal care, and pharmaceuticals, from Cul De Sac to supermarkets, minimarts, bars, hotels and pharmacies island-wide. The website does not yet do any of that work. When we checked acadostlucia.com on 26 October 2026:</p>
+  <p>Peter &amp; Company has traded in Castries since 1891, and as Acado St. Lucia it describes itself as one of the island’s largest distributors of consumer products: wines and spirits, Carib and the Brewery range, food, household and personal care, and pharmaceuticals, from Cul De Sac to supermarkets, minimarts, bars, hotels and pharmacies island-wide. The website does not yet do any of that work. When we checked acadostlucia.com on 26 October 2026:</p>
   <ul class="list evidence">
     <li>The brand portfolio is shown as <b>logo grids</b> on four division pages – images that buyers cannot search and search engines cannot read.</li>
     <li>There is <b>no catalogue, no price list request and no way to send an order</b>. A buyer still has to phone or wait for a rep.</li>
     <li>There is <b>no trade account or credit application</b>. Licences, VAT certificates and IDs travel on paper or by email attachment.</li>
-    <li>The contact page has the head-office number and a general contact form, but <b>no email address</b>; we found no online route for brand owners looking for a distributor, or for a job application with a CV.</li>
+    <li>The contact page has the head-office number and a general contact form, but <b>no email address</b>. The careers page has a short form with <b>no CV upload and no vacancies</b>, and brand owners looking for a distributor have only the general contact form.</li>
   </ul>
   <p>This proposal turns the website into a working trade channel. A buyer finds a line, adds cases to an order list and sends it with a delivery day; the trade desk confirms prices and availability by phone. A new customer applies for cash-on-delivery or credit terms and uploads their documents, which only credit control can open. Brand owners and job seekers each have a proper front door. A complete working demo has been built from the company’s own published information and can be shown live.</p>
   <div class="stat-grid">
     <div class="stat"><b>${screenCount}</b><span>screens in this proposal, all from the working demo</span></div>
-    <div class="stat"><b>152</b><span>brands, read from your own division pages, as text</span></div>
+    <div class="stat"><b>${BRANDS}</b><span>brands, read from your own division pages, as text</span></div>
     <div class="stat"><b>4</b><span>staff roles: admin, trade desk, credit, HR</span></div>
     <div class="stat"><b>${TESTS}</b><span>automated tests, run on every change</span></div>
   </div>
@@ -361,7 +367,7 @@ ${packed[sec.id]}
 ${PHONES.map((row, i) => `
 <section class="page">
   <header class="shot-head"><div><p class="eyebrow">Responsive design${i ? ' · continued' : ''}</p><h2>${i ? 'Applications and the back office on a phone' : 'Built for phones first'}</h2></div><p class="url">390 × 844</p></header>
-  <p style="margin:0 0 4px">${i ? 'Owners apply from the shop counter with a phone photo of their licence, and reps can check and call back an order from the road.' : 'Most buyers order from the shop floor on a phone. A bar with Call, Catalogue and the order list stays at the bottom of every public page.'}</p>
+  <p style="margin:0 0 4px">${i ? 'Owners apply from the shop counter with a phone photo of their licence, and reps can check and call back an order from the road.' : 'Buyers can order from the shop floor on a phone. A bar with Call, Catalogue and the order list stays at the bottom of every public page.'}</p>
   <div class="phones">${row.map(([k, c]) => `<figure><img src="${img(chunks[k].chunks[0])}" alt="${esc(c)}"><figcaption>${esc(c)}</figcaption></figure>`).join('')}</div>
   ${foot()}
 </section>`).join('')}
