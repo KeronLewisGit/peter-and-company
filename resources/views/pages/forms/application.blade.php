@@ -1,3 +1,4 @@
+@php($kept = \App\Support\UploadStash::for('application')->names())
 <x-layouts.site :title="$vacancy ? 'Apply: '.$vacancy->title : 'Send your CV'" description="Apply for a job at Acado St. Lucia. Attach your CV; only HR can open it.">
     <x-page-hero :title="$vacancy ? 'Apply: '.$vacancy->title : 'Send your CV'" :lead="$vacancy ? $vacancy->summary : 'A general application for warehouse, delivery, merchandising, sales or office work. HR keeps it on file for twelve months.'" code="H-03" label="Application" photo="warehouse-racking" alt="" label-code="CV" label-line="HR only">
         <nav class="mt-6 text-sm text-ink-3" aria-label="Breadcrumb"><a href="{{ route('careers.index') }}" class="text-link underline underline-offset-2">Careers</a> / Apply</nav>
@@ -29,8 +30,8 @@
                 </fieldset>
                 <fieldset class="space-y-5">
                     <legend class="fieldset-title mb-5"><span class="step">3</span>Your CV</legend>
-                    <x-field name="cv" label="CV" type="file" :required="true" accept=".pdf,.doc,.docx" hint="PDF or Word, up to 8 MB. Only HR can open it." />
-                    <x-field name="letter" label="Cover letter" type="file" :optional="true" accept=".pdf,.doc,.docx" />
+                    <x-field name="cv" :kept="$kept['cv'] ?? null" label="CV" type="file" :required="true" accept=".pdf,.doc,.docx" hint="PDF or Word, up to 8 MB. Only HR can open it." />
+                    <x-field name="letter" :kept="$kept['letter'] ?? null" label="Cover letter" type="file" :optional="true" accept=".pdf,.doc,.docx" />
                     <label class="choice"><input type="checkbox" name="consent" value="1" @checked(old('consent')) required><span>I agree that Acado St. Lucia may keep my application on file for twelve months.</span></label>
                     <x-error for="consent" />
                 </fieldset>

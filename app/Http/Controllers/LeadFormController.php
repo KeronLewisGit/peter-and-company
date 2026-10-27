@@ -7,8 +7,11 @@ use App\Enums\PaymentTerms;
 use App\Enums\TradeType;
 use App\Models\Vacancy;
 use App\Support\LeadIntake;
+use App\Support\StashedUpload;
+use App\Support\UploadStash;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use Illuminate\View\View;
@@ -38,7 +41,10 @@ class LeadFormController extends Controller
             return to_route('thanks');
         }
         $medical = fn () => TradeType::tryFrom(input_string($request->input('trade_type')))?->isMedical() === true;
-        $validator = validator($request->all(), $this->contactRules() + [
+        $doc = ['file', self::DOC_MIMES, 'max:10240'];
+        $stash = UploadStash::for('account');
+        $stash->keep($request, array_fill_keys(['trade_licence', 'vat_certificate', 'id_document', 'pharmacy_licence', 'bank_reference'], $doc));
+        $validator = validator($request->all(), $stash->relax($this->contactRules() + [
             'position' => ['required', 'string', 'max:80'],
             'business_name' => ['required', 'string', 'max:160'],
             'trading_as' => ['nullable', 'string', 'max:160'],
@@ -68,7 +74,7 @@ class LeadFormController extends Controller
             'consent' => ['accepted'],
             'declaration' => ['accepted'],
             'message' => ['nullable', 'string', 'max:1500'],
-        ], [
+        ], $request), [
             'consent.accepted' => 'We need your consent to check your references and documents.',
             'declaration.accepted' => 'Please confirm the details are correct.',
             'vat_no.required_if' => 'Enter your VAT registration number.',
@@ -114,12 +120,13 @@ class LeadFormController extends Controller
                 ], fn (array $r) => filled($r['name']))),
             ],
         ], [
-            'trade_licence' => array_filter([$request->file('trade_licence')]),
-            'vat_certificate' => array_filter([$request->file('vat_certificate')]),
-            'id' => array_filter([$request->file('id_document')]),
-            'pharmacy_licence' => $type->isMedical() ? array_filter([$request->file('pharmacy_licence')]) : [],
-            'bank_reference' => array_filter([$request->file('bank_reference')]),
+            'trade_licence' => $this->upload($request, $stash, 'trade_licence'),
+            'vat_certificate' => $this->upload($request, $stash, 'vat_certificate'),
+            'id' => $this->upload($request, $stash, 'id_document'),
+            'pharmacy_licence' => $type->isMedical() ? $this->upload($request, $stash, 'pharmacy_licence') : [],
+            'bank_reference' => $this->upload($request, $stash, 'bank_reference'),
         ], $request);
+        $stash->clear();
 
         return to_route('thanks');
     }
@@ -136,7 +143,9 @@ class LeadFormController extends Controller
         if (LeadIntake::isBot($request)) {
             return to_route('thanks');
         }
-        $data = $request->validate($this->contactRules() + [
+        $stash = UploadStash::for('principal');
+        $stash->keep($request, ['deck' => ['file', 'mimes:pdf,ppt,pptx', 'max:15360']]);
+        $data = $request->validate($stash->relax($this->contactRules() + [
             'business_name' => ['required', 'string', 'max:160'],
             'job_title' => ['required', 'string', 'max:80'],
             'country' => ['required', 'string', 'max:60'],
@@ -148,8 +157,9 @@ class LeadFormController extends Controller
             'caribbean' => ['nullable', 'string', 'max:500'],
             'deck' => ['nullable', 'file', 'mimes:pdf,ppt,pptx', 'max:15360'],
             'message' => ['required', 'string', 'max:3000'],
-        ], [
+        ], $request), [
             'categories.required' => 'Choose at least one category.',
+            'categories.*.in' => 'Choose categories from the list.',
             'company_site.url' => 'Enter the full web address, starting with https://',
         ], ['business_name' => 'company', 'company_site' => 'website', 'brands' => 'brand names', 'deck' => 'presentation']);
 
@@ -164,7 +174,8 @@ class LeadFormController extends Controller
                 'categories' => array_values($data['categories']),
                 'caribbean' => $data['caribbean'] ?? null,
             ],
-        ], ['deck' => array_filter([$request->file('deck')])], $request);
+        ], ['deck' => $this->upload($request, $stash, 'deck')], $request);
+        $stash->clear();
 
         return to_route('thanks');
     }
@@ -186,7 +197,9 @@ class LeadFormController extends Controller
         if (LeadIntake::isBot($request)) {
             return to_route('thanks');
         }
-        $data = $request->validate($this->contactRules() + [
+        $stash = UploadStash::for('application');
+        $stash->keep($request, array_fill_keys(['cv', 'letter'], ['file', self::CV_MIMES, 'max:8192']));
+        $data = $request->validate($stash->relax($this->contactRules() + [
             'vacancy' => ['nullable', 'string', Rule::exists('vacancies', 'slug')->where('published', true)],
             'role_interest' => ['nullable', 'required_without:vacancy', 'string', 'max:120'],
             'district' => ['required', Rule::in(array_keys((array) peterco('districts')))],
@@ -196,7 +209,7 @@ class LeadFormController extends Controller
             'cv' => ['required', 'file', self::CV_MIMES, 'max:8192'],
             'letter' => ['nullable', 'file', self::CV_MIMES, 'max:8192'],
             'consent' => ['accepted'],
-        ], [
+        ], $request), [
             'role_interest.required_without' => 'Tell us what kind of work you are looking for.',
             'cv.required' => 'Attach your CV (PDF or Word).',
             'cv.mimes' => 'Your CV must be a PDF or Word document.',
@@ -218,9 +231,10 @@ class LeadFormController extends Controller
                 'driving_licence' => $data['driving_licence'],
             ],
         ], [
-            'cv' => array_filter([$request->file('cv')]),
-            'letter' => array_filter([$request->file('letter')]),
+            'cv' => $this->upload($request, $stash, 'cv'),
+            'letter' => $this->upload($request, $stash, 'letter'),
         ], $request);
+        $stash->clear();
 
         return to_route('thanks');
     }
@@ -254,6 +268,19 @@ class LeadFormController extends Controller
     }
 
     // ---------------------------------------------------------------- shared
+
+    /**
+     * The file for a field: kept by UploadStash::keep() (every valid new upload is), or, if
+     * storing it failed, the upload itself.
+     *
+     * @return list<UploadedFile|StashedUpload>
+     */
+    private function upload(Request $request, UploadStash $stash, string $field): array
+    {
+        $file = $stash->get($field) ?? $request->file($field);
+
+        return $file instanceof UploadedFile || $file instanceof StashedUpload ? [$file] : [];
+    }
 
     /** @return array<string, list<mixed>> */
     private function contactRules(): array

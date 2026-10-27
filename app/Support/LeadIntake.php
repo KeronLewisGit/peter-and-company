@@ -9,6 +9,7 @@ use App\Notifications\LeadReceived;
 use App\Notifications\NewLead;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Every public form ends here: one lead row with a reference, the uploaded files on
@@ -19,7 +20,7 @@ final class LeadIntake
 {
     /**
      * @param  array<string, mixed>  $attributes
-     * @param  array<string, list<UploadedFile>>  $files  kind => files
+     * @param  array<string, list<UploadedFile|StashedUpload>>  $files  kind => files (new uploads, or ones kept from an earlier try)
      */
     public static function create(LeadType $type, array $attributes, array $files, Request $request): Lead
     {
@@ -31,6 +32,16 @@ final class LeadIntake
 
         foreach ($files as $kind => $list) {
             foreach ($list as $file) {
+                if ($file instanceof StashedUpload) {
+                    // Kept from an earlier try: move it into the lead's folder under its random name.
+                    $path = 'leads/'.$lead->id.'/'.basename($file->path);
+                    if (! Storage::disk('local')->move($file->path, $path)) {
+                        continue;
+                    }
+                    $lead->files()->create(['kind' => $kind, 'path' => $path, 'original_name' => $file->originalName, 'mime' => $file->mime, 'size' => $file->size]);
+
+                    continue;
+                }
                 $lead->files()->create([
                     'kind' => $kind,
                     // Random file name, private disk, one folder per lead.

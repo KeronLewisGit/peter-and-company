@@ -1,6 +1,7 @@
 @php
     $districts = (array) peterco('districts');
     $docHint = 'PDF, JPG or PNG, up to 10 MB. A clear phone photo is fine.';
+    $kept = \App\Support\UploadStash::for('account')->names();
 @endphp
 <x-layouts.site title="Open a trade account" description="Apply for a cash-on-delivery or credit trade account with Acado St. Lucia. Upload your trade licence, VAT certificate and ID securely.">
     <x-page-hero title="Open a trade account" lead="For shops, bars, hotels, restaurants, pharmacies and clinics in St Lucia. Apply for cash on delivery or credit terms; credit control reviews your documents and calls you." code="T-01" label="Trade account" photo="castries-market" alt="Shoppers and stalls at the Castries market" label-code="COD · Credit" label-line="Credit control" />
@@ -79,11 +80,11 @@
                     <fieldset class="space-y-5">
                         <legend class="fieldset-title mb-5"><span class="step">4</span>Documents</legend>
                         <p class="-mt-2 text-ink-2">Stored privately, outside the public website. Only credit control can open them, and every time a document is opened it is logged.</p>
-                        <x-field name="trade_licence" label="Trade licence" type="file" :required="true" accept=".pdf,.jpg,.jpeg,.png,.heic" :hint="$docHint" />
-                        <div x-show="vat !== 'no'"><x-field name="vat_certificate" label="VAT certificate" type="file" accept=".pdf,.jpg,.jpeg,.png,.heic" hint="Required if you are VAT-registered." /></div>
-                        <x-field name="id_document" label="Photo ID of the owner or director" type="file" :required="true" accept=".pdf,.jpg,.jpeg,.png,.heic" hint="National ID, passport or driving permit." />
-                        <div x-show="medical || tradeType === ''"><x-field name="pharmacy_licence" label="Pharmacy or clinic licence" type="file" accept=".pdf,.jpg,.jpeg,.png,.heic" hint="Pharmacies and clinics only." /></div>
-                        <div x-show="terms === 'credit'"><x-field name="bank_reference" label="Bank reference letter" type="file" :optional="true" accept=".pdf,.jpg,.jpeg,.png,.heic" /></div>
+                        <x-field name="trade_licence" :kept="$kept['trade_licence'] ?? null" label="Trade licence" type="file" :required="true" accept=".pdf,.jpg,.jpeg,.png,.heic" :hint="$docHint" />
+                        <div x-show="vat !== 'no'"><x-field name="vat_certificate" :kept="$kept['vat_certificate'] ?? null" label="VAT certificate" type="file" accept=".pdf,.jpg,.jpeg,.png,.heic" hint="Required if you are VAT-registered." /></div>
+                        <x-field name="id_document" :kept="$kept['id_document'] ?? null" label="Photo ID of the owner or director" type="file" :required="true" accept=".pdf,.jpg,.jpeg,.png,.heic" hint="National ID, passport or driving permit." />
+                        <div x-show="medical || tradeType === ''"><x-field name="pharmacy_licence" :kept="$kept['pharmacy_licence'] ?? null" label="Pharmacy or clinic licence" type="file" accept=".pdf,.jpg,.jpeg,.png,.heic" hint="Pharmacies and clinics only." /></div>
+                        <div x-show="terms === 'credit'"><x-field name="bank_reference" :kept="$kept['bank_reference'] ?? null" label="Bank reference letter" type="file" :optional="true" accept=".pdf,.jpg,.jpeg,.png,.heic" /></div>
                     </fieldset>
 
                     <fieldset class="space-y-5">

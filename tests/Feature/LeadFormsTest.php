@@ -60,6 +60,46 @@ class LeadFormsTest extends TestCase
         Notification::assertSentOnDemand(LeadReceived::class);
     }
 
+    public function test_documents_attached_on_a_failed_try_are_kept_for_the_next_one(): void
+    {
+        // A typo elsewhere on the form: the documents were fine, and the browser can't re-fill file inputs.
+        $this->post('/trade-account', $this->account(['phone' => 'call me']))->assertSessionHasErrors('phone');
+        $this->assertSame(0, Lead::count());
+        $this->get('/trade-account')->assertOk()->assertSee('Attached: licence.pdf')->assertSee('Attached: vat.pdf')->assertSee('Attached: id.jpg');
+        $this->assertCount(3, Storage::disk('local')->files('stash'));
+
+        // Second try: the ID is replaced, the rest is reused, nothing is attached twice.
+        $this->post('/trade-account', $this->account(['trade_licence' => null, 'vat_certificate' => null, 'id_document' => UploadedFile::fake()->image('passport.jpg')]))
+            ->assertRedirect('/thanks')->assertSessionHasNoErrors();
+        $lead = Lead::sole();
+        $this->assertEqualsCanonicalizing(['licence.pdf', 'vat.pdf', 'passport.jpg'], $lead->files->pluck('original_name')->all());
+        foreach ($lead->files as $f) {
+            Storage::disk('local')->assertExists($f->path);
+            $this->assertStringStartsWith("leads/{$lead->id}/", $f->path);
+        }
+        $this->assertSame([], Storage::disk('local')->files('stash'));
+        $this->get('/trade-account')->assertDontSee('Attached:');
+
+        // A kept file never satisfies the form for someone else's session.
+        $this->flushSession();
+        $this->post('/trade-account', $this->account(['trade_licence' => null]))->assertSessionHasErrors('trade_licence');
+    }
+
+    public function test_a_kept_cv_carries_over_and_abandoned_uploads_are_deleted_after_a_day(): void
+    {
+        $base = array_merge($this->contact(), ['district' => 'castries', 'available' => 'now', 'driving_licence' => 'none', 'consent' => '1']);
+        $this->post('/careers/apply', $base + ['cv' => UploadedFile::fake()->create('my-cv.pdf', 100, 'application/pdf')])->assertSessionHasErrors('role_interest');
+        $this->get('/careers/apply')->assertSee('Attached: my-cv.pdf');
+        $this->post('/careers/apply', $base + ['role_interest' => 'Driver'])->assertRedirect('/thanks');
+        $this->assertSame('my-cv.pdf', Lead::sole()->files->sole()->original_name);
+
+        Storage::disk('local')->put('stash/old.pdf', 'x');
+        touch(Storage::disk('local')->path('stash/old.pdf'), now()->subDays(2)->getTimestamp());
+        $this->flushSession();
+        $this->post('/careers/apply', $base + ['cv' => UploadedFile::fake()->create('cv2.pdf', 10, 'application/pdf')]);
+        Storage::disk('local')->assertMissing('stash/old.pdf');
+    }
+
     public function test_vat_credit_and_pharmacy_rules(): void
     {
         $this->post('/trade-account', $this->account(['vat_no' => '', 'vat_certificate' => null]))->assertSessionHasErrors(['vat_no', 'vat_certificate']);
@@ -114,6 +154,7 @@ class LeadFormsTest extends TestCase
         $this->assertSame('cv', $lead->files->sole()->kind);
 
         $this->post('/careers/apply', array_merge($base, ['cv' => UploadedFile::fake()->create('cv.docx', 100)]))->assertSessionHasErrors('role_interest');
+        $this->flushSession(); // a new visitor, with no CV kept from an earlier try
         $this->post('/careers/apply', array_merge($base, ['role_interest' => 'Driver', 'cv' => null]))->assertSessionHasErrors('cv');
         $this->post('/careers/apply', array_merge($base, ['role_interest' => 'Driver', 'cv' => UploadedFile::fake()->image('cv.png')]))->assertSessionHasErrors('cv');
         $this->post('/careers/apply', array_merge($base, ['role_interest' => 'Driver', 'cv' => UploadedFile::fake()->create('cv.pdf', 50, 'application/pdf')]))->assertSessionHasNoErrors();

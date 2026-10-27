@@ -1,3 +1,4 @@
+@php($kept = \App\Support\UploadStash::for('principal')->names())
 <x-layouts.site title="Brand owners and principals" description="Brand owners looking for distribution in St Lucia: tell Acado St. Lucia about your range, markets and plans.">
     <x-page-hero title="Distribution in St Lucia for your brand." lead="For manufacturers and brand owners outside St Lucia. Tell us about your range, where it sells today and what you need from a distributor. Our management team reviews every enquiry." code="P-01" label="Principals" photo="castries-harbour" alt="Castries harbour with cargo and cruise ships at the quay" label-code="PR · LC" label-line="Import · Warehouse · Sell in" />
 
@@ -40,7 +41,7 @@
                         </div>
                         <x-field name="caribbean" label="Where in the Caribbean do you sell today?" :optional="true" maxlength="500" />
                         <x-field name="message" label="Tell us about the range and what you need" type="textarea" :required="true" rows="5" maxlength="3000" />
-                        <x-field name="deck" label="Presentation or price list" type="file" :optional="true" accept=".pdf,.ppt,.pptx" hint="PDF or PowerPoint, up to 15 MB." />
+                        <x-field name="deck" :kept="$kept['deck'] ?? null" label="Presentation or price list" type="file" :optional="true" accept=".pdf,.ppt,.pptx" hint="PDF or PowerPoint, up to 15 MB." />
                     </fieldset>
                     <x-submit label="Send enquiry" />
                 </form>
