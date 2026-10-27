@@ -184,6 +184,24 @@ class Lead extends Model
     }
 
     /**
+     * Moves a trade account application to Approved in one conditional UPDATE, so of two
+     * concurrent approvals only one wins (MySQL row lock / SQLite write lock). False if
+     * another request approved it first.
+     */
+    public function claimForApproval(): bool
+    {
+        $now = now();
+        $claimed = self::query()->whereKey($this->id)->where('type', LeadType::Account)
+            ->where('status', '!=', LeadStatus::Approved)->whereNull('trade_account_id')
+            ->update(['status' => LeadStatus::Approved, 'status_changed_at' => $now, 'first_contacted_at' => $this->first_contacted_at ?? $now, 'updated_at' => $now]) === 1;
+        if ($claimed) {
+            $this->refresh();
+        }
+
+        return $claimed;
+    }
+
+    /**
      * Requests this user's role works on.
      *
      * @param  Builder<self>  $query

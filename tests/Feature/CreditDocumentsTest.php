@@ -126,10 +126,33 @@ class CreditDocumentsTest extends TestCase
         $this->assertTrue($account->canOrderPharmaceuticals());
         Notification::assertSentOnDemand(AccountOpened::class);
 
-        // Approving twice is refused, and an approved application can't be moved back.
-        $this->actingAs($officer)->post(route('admin.credit.approve', $lead), ['terms' => 'cod'])->assertStatus(409);
+        // Approving twice opens nothing new, and an approved application can't be moved back.
+        $this->actingAs($officer)->post(route('admin.credit.approve', $lead), ['terms' => 'cod'])
+            ->assertRedirect(route('admin.leads.show', $lead))->assertSessionHas('status', fn (string $s) => str_contains($s, 'already approved') && str_contains($s, $account->number));
+        Notification::assertSentOnDemandTimes(AccountOpened::class, 1);
         $this->actingAs($officer)->patch(route('admin.leads.update', $lead), ['status' => 'reviewing'])->assertSessionHasErrors('status');
         $this->assertSame(1, TradeAccount::count());
+    }
+
+    public function test_two_approvals_racing_open_only_one_account(): void
+    {
+        Notification::fake();
+        $officer = $this->staff(Role::Credit);
+        // Both requests loaded the application before either saved (double click, or two officers).
+        $first = Lead::findOrFail($this->application->id);
+        $second = Lead::findOrFail($this->application->id);
+
+        $this->assertTrue($first->claimForApproval());
+        $this->assertFalse($second->claimForApproval());
+        $this->assertSame(LeadStatus::Approved, $second->fresh()->status);
+
+        // The controller path for the loser: no account, no email, a calm message.
+        $lead = $this->application->fresh();
+        $lead->forceFill(['status' => LeadStatus::Reviewing])->saveQuietly();
+        $this->actingAs($officer)->post(route('admin.credit.approve', $lead), ['terms' => 'cod'])->assertRedirect();
+        $this->actingAs($officer)->post(route('admin.credit.approve', $lead), ['terms' => 'cod'])->assertSessionHas('status', fn (string $s) => str_contains($s, 'already approved'));
+        $this->assertSame(1, TradeAccount::count());
+        Notification::assertSentOnDemandTimes(AccountOpened::class, 1);
     }
 
     public function test_only_credit_and_admin_decide_on_applications(): void

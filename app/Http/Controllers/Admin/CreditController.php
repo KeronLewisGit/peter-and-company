@@ -37,7 +37,9 @@ class CreditController extends Controller
     public function approve(Request $request, Lead $lead): RedirectResponse
     {
         Gate::authorize('decideCredit', $lead);
-        abort_if($lead->status === LeadStatus::Approved || $lead->trade_account_id !== null, 409, 'This application already has an account.');
+        if ($lead->status === LeadStatus::Approved || $lead->trade_account_id !== null) {
+            return $this->alreadyApproved($lead);
+        }
         $data = $request->validate([
             'terms' => ['required', Rule::enum(PaymentTerms::class)],
             'note' => ['nullable', 'string', 'max:1000'],
@@ -47,6 +49,11 @@ class CreditController extends Controller
         $type = TradeType::tryFrom((string) $lead->detail('trade_type')) ?? TradeType::Other;
 
         $account = DB::transaction(function () use ($lead, $data, $user, $type) {
+            // A double click, or two officers approving at once: only the request that moves
+            // the row to Approved opens an account. The others find nothing to update.
+            if (! $lead->claimForApproval()) {
+                return null;
+            }
             $account = TradeAccount::create([
                 'business_name' => $lead->business_name ?? $lead->name,
                 'trade_type' => $type,
@@ -61,15 +68,24 @@ class CreditController extends Controller
                 'approved_at' => now(),
             ]);
             $lead->trade_account_id = $account->id;
-            $lead->moveTo(LeadStatus::Approved);
             $lead->save();
             $lead->notes()->create(['user_id' => $user->id, 'kind' => 'credit', 'body' => "Approved. Trade account {$account->number} opened on ".PaymentTerms::from($data['terms'])->short().' terms.'.(! empty($data['note']) ? ' '.$data['note'] : '')]);
 
             return $account;
         });
+        if (! $account instanceof TradeAccount) {
+            return $this->alreadyApproved($lead->refresh());
+        }
 
         Notify::customer($account->email, new AccountOpened($account));
 
         return to_route('admin.leads.show', $lead)->with('status', "Account {$account->number} opened for {$account->business_name}. The customer has been emailed the number.");
+    }
+
+    private function alreadyApproved(Lead $lead): RedirectResponse
+    {
+        $number = $lead->tradeAccount?->number;
+
+        return to_route('admin.leads.show', $lead)->with('status', 'This application was already approved'.($number ? " and account {$number} is open" : '').'. No second account was opened.');
     }
 }
