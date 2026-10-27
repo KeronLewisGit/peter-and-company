@@ -118,6 +118,15 @@ Go to hPanel → GIT → your repository → **Auto Deployment** and copy the we
 | Page loads without styling | `public/build/` was not committed. Run `npm run build` locally, commit, push and deploy again. |
 | Emails never arrive | Check `MAIL_*` and `PETERCO_NOTIFY_EMAIL` in `.env`, run `php artisan optimize`, and check the mailbox's spam folder. |
 
+## Pitch preview (demo data on a Hostinger preview domain)
+
+Previews deploy from Git (Option B), not from the zip, which leaves `DemoSeeder` out. `DemoSeeder` refuses to run when `APP_ENV=production` unless the preview flag is set, because every demo staff account starts with the password `password`.
+
+1. In `.env`, set `PETERCO_PREVIEW=true`. This shows the preview banner, sends `noindex`, and lets the demo seeder run.
+2. Run `php artisan migrate --force --seeder=DemoSeeder`.
+3. Straight away, reset every staff password to the preview's own demo password with tinker. Never leave `password` live.
+4. When the site becomes the client's real site, set `PETERCO_PREVIEW=false` and `php artisan migrate:fresh --force` without the seeder. Then create the first administrator with `php artisan app:create-admin` (or `ADMIN_*` and `db:seed`).
+
 ## Check after install
 
 - `https://acadostlucia.com/.env`, `/.git/config` and `/composer.json` must return 403 or 404. For Option A, check `/peterco-app/` as well.

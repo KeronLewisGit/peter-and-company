@@ -262,6 +262,16 @@ class AdminTest extends TestCase
         }
     }
 
+    public function test_the_demo_seeder_runs_in_production_on_a_pitch_preview(): void
+    {
+        Storage::fake('local');
+        $this->app['env'] = 'production';
+        config(['peterco.preview' => true]);
+        $this->app->make(DemoSeeder::class)->run();
+        $this->assertTrue(User::where('email', 'admin@peterco.test')->exists());
+        $this->get('/')->assertSee('noindex', false);
+    }
+
     public function test_database_seeder_only_creates_the_first_admin_from_env(): void
     {
         config(['peterco.admin' => ['name' => 'Owner', 'email' => 'owner@example.com', 'password' => 'a-long-password']]);

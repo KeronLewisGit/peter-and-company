@@ -33,9 +33,11 @@ class DemoSeeder extends Seeder
 {
     public function run(): void
     {
-        // Demo staff all have the password "password": never on a live site.
-        if (app()->isProduction()) {
-            throw new \RuntimeException('DemoSeeder creates demo staff with the password "password" and is refused in production.');
+        // Demo staff all start with the password "password": never on the client's live site.
+        // A pitch preview (PETERCO_PREVIEW=true: banner + noindex) opts in explicitly, and the
+        // passwords are reset straight after seeding (INSTALL-HOSTINGER.md, "Pitch preview").
+        if (app()->isProduction() && ! peterco('preview')) {
+            throw new \RuntimeException('DemoSeeder creates demo staff with the password "password" and is refused in production. On a pitch preview, set PETERCO_PREVIEW=true first.');
         }
         $users = collect([
             ['admin@peterco.test', 'Demo Administrator', Role::Admin],
