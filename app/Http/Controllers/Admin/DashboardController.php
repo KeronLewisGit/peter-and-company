@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\TradeAccount;
 use App\Models\User;
 use App\Models\Vacancy;
+use App\Support\Delivery;
 use App\Support\Notify;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -43,6 +44,8 @@ class DashboardController extends Controller
             return ['date' => $day, 'count' => (int) ($dates[$day->toDateString()] ?? 0)];
         });
 
+        // Today and the next three working days (weekends and closed dates skipped).
+        $deliveryUntil = (Delivery::days()[2] ?? today()->addDays(4))->copy();
         $tiles = [];
         if ($user->canWork(LeadType::Order)) {
             $orders = fn () => $mine()->where('type', LeadType::Order);
@@ -55,7 +58,7 @@ class DashboardController extends Controller
             $tiles[] = ['label' => 'Median time to confirm an order', 'value' => $responses->isEmpty() ? null : (int) $responses->median(), 'format' => 'minutes',
                 'note' => 'last 30 days, '.$responses->count().' orders', 'href' => route('admin.leads.index', ['type' => 'order'])];
             $tiles[] = ['label' => 'Deliveries requested, next 3 working days', 'value' => $orders()->whereNotIn('status', [LeadStatus::Cancelled, LeadStatus::Delivered])
-                ->whereBetween('delivery_date', [today(), today()->addDays(4)])->count(), 'note' => 'confirm the day with each customer', 'href' => route('admin.leads.index', ['type' => 'order', 'status' => 'open'])];
+                ->whereBetween('delivery_date', [today(), $deliveryUntil])->count(), 'note' => 'confirm the day with each customer', 'href' => route('admin.leads.index', ['type' => 'order', 'status' => 'open'])];
         }
         if ($user->canWork(LeadType::Account)) {
             $tiles[] = ['label' => 'Trade account applications open', 'value' => $mine()->where('type', LeadType::Account)->open()->count(),
@@ -90,7 +93,7 @@ class DashboardController extends Controller
             ])->sortByDesc('count')->values(),
             'queue' => $mine()->with(['vacancy', 'tradeAccount'])->where('status', LeadStatus::New)->oldest()->limit(8)->get(),
             'deliveries' => $user->canWork(LeadType::Order) ? $mine()->where('type', LeadType::Order)->whereNotIn('status', [LeadStatus::Cancelled, LeadStatus::Delivered])
-                ->whereBetween('delivery_date', [today(), today()->addDays(4)])->orderBy('delivery_date')->limit(8)->get() : collect(),
+                ->whereBetween('delivery_date', [today(), $deliveryUntil])->orderBy('delivery_date')->limit(8)->get() : collect(),
             'notifyMissing' => $user->isAdmin() && Notify::recipients() === [],
             'notifyInvalid' => $user->isAdmin() ? Notify::invalid() : [],
         ]);

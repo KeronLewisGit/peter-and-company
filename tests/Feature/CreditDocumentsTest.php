@@ -155,6 +155,17 @@ class CreditDocumentsTest extends TestCase
         Notification::assertSentOnDemandTimes(AccountOpened::class, 1);
     }
 
+    public function test_the_trade_desk_sees_that_credit_decided_but_not_the_decision_notes(): void
+    {
+        Notification::fake();
+        $this->actingAs($this->staff(Role::Credit))->post(route('admin.credit.approve', $this->application), ['terms' => 'credit', 'note' => 'Limit EC$15,000 agreed, bank reference checked']);
+        $number = TradeAccount::sole()->number;
+
+        $this->actingAs($this->staff(Role::Sales))->get(route('admin.leads.show', $this->application))->assertOk()
+            ->assertDontSee('Limit EC$15,000')->assertSee('Credit control recorded a decision and opened account '.$number);
+        $this->actingAs($this->staff(Role::Credit))->get(route('admin.leads.show', $this->application))->assertSee('Limit EC$15,000 agreed');
+    }
+
     public function test_only_credit_and_admin_decide_on_applications(): void
     {
         $sales = $this->staff(Role::Sales);

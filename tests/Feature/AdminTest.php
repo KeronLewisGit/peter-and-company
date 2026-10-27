@@ -53,6 +53,17 @@ class AdminTest extends TestCase
         $this->actingAs($sales)->get('/admin/leads?overdue=1')->assertSee('Late Order Bar')->assertDontSee($account->reference);
     }
 
+    public function test_requested_deliveries_cover_the_next_three_working_days_not_four_calendar_days(): void
+    {
+        $this->travelTo(now()->next('Thursday')->setTime(9, 0));
+        $sales = $this->staff(Role::Sales);
+        // Thursday: the next three working days are Friday, Monday and Tuesday.
+        Lead::factory()->type(LeadType::Order)->create(['business_name' => 'Tuesday Drop Bar', 'status' => LeadStatus::Confirmed, 'delivery_date' => today()->next('Tuesday')]);
+        Lead::factory()->type(LeadType::Order)->create(['business_name' => 'Wednesday Drop Bar', 'status' => LeadStatus::Confirmed, 'delivery_date' => today()->next('Wednesday')]);
+
+        $this->actingAs($sales)->get('/admin')->assertOk()->assertSee('Tuesday Drop Bar')->assertDontSee('Wednesday Drop Bar');
+    }
+
     public function test_roles_only_see_their_request_types(): void
     {
         $leads = collect(LeadType::cases())->mapWithKeys(fn (LeadType $t) => [$t->value => Lead::factory()->type($t)->create()]);
