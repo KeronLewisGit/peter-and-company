@@ -1,0 +1,77 @@
+{
+  "_figtree-400-normal-BD4aNku5.woff": {
+    "file": "assets/figtree-400-normal-BD4aNku5.woff",
+    "src": "_figtree-400-normal-BD4aNku5.woff"
+  },
+  "_figtree-400-normal-g7Dtegnw.woff2": {
+    "file": "assets/figtree-400-normal-g7Dtegnw.woff2",
+    "src": "_figtree-400-normal-g7Dtegnw.woff2"
+  },
+  "_figtree-500-normal-BWnGEVsr.woff2": {
+    "file": "assets/figtree-500-normal-BWnGEVsr.woff2",
+    "src": "_figtree-500-normal-BWnGEVsr.woff2"
+  },
+  "_figtree-500-normal-B_yy1phn.woff": {
+    "file": "assets/figtree-500-normal-B_yy1phn.woff",
+    "src": "_figtree-500-normal-B_yy1phn.woff"
+  },
+  "_figtree-600-normal-BM_oTo4n.woff": {
+    "file": "assets/figtree-600-normal-BM_oTo4n.woff",
+    "src": "_figtree-600-normal-BM_oTo4n.woff"
+  },
+  "_figtree-600-normal-Cv_xCTDl.woff2": {
+    "file": "assets/figtree-600-normal-Cv_xCTDl.woff2",
+    "src": "_figtree-600-normal-Cv_xCTDl.woff2"
+  },
+  "_figtree-700-normal-BCCt2T1q.woff": {
+    "file": "assets/figtree-700-normal-BCCt2T1q.woff",
+    "src": "_figtree-700-normal-BCCt2T1q.woff"
+  },
+  "_figtree-700-normal-th6qEP7c.woff2": {
+    "file": "assets/figtree-700-normal-th6qEP7c.woff2",
+    "src": "_figtree-700-normal-th6qEP7c.woff2"
+  },
+  "_fonts-DHO3Ufwx.css": {
+    "file": "assets/fonts-DHO3Ufwx.css",
+    "src": "_fonts-DHO3Ufwx.css"
+  },
+  "_schibsted-grotesk-500-normal-Ba39e-CX.woff": {
+    "file": "assets/schibsted-grotesk-500-normal-Ba39e-CX.woff",
+    "src": "_schibsted-grotesk-500-normal-Ba39e-CX.woff"
+  },
+  "_schibsted-grotesk-500-normal-rf9C4Thp.woff2": {
+    "file": "assets/schibsted-grotesk-500-normal-rf9C4Thp.woff2",
+    "src": "_schibsted-grotesk-500-normal-rf9C4Thp.woff2"
+  },
+  "_schibsted-grotesk-700-normal-BkH0uJ1o.woff2": {
+    "file": "assets/schibsted-grotesk-700-normal-BkH0uJ1o.woff2",
+    "src": "_schibsted-grotesk-700-normal-BkH0uJ1o.woff2"
+  },
+  "_schibsted-grotesk-700-normal-Dz-okVa0.woff": {
+    "file": "assets/schibsted-grotesk-700-normal-Dz-okVa0.woff",
+    "src": "_schibsted-grotesk-700-normal-Dz-okVa0.woff"
+  },
+  "_schibsted-grotesk-800-normal-CIaq-TR1.woff2": {
+    "file": "assets/schibsted-grotesk-800-normal-CIaq-TR1.woff2",
+    "src": "_schibsted-grotesk-800-normal-CIaq-TR1.woff2"
+  },
+  "_schibsted-grotesk-800-normal-Dl5-MP1T.woff": {
+    "file": "assets/schibsted-grotesk-800-normal-Dl5-MP1T.woff",
+    "src": "_schibsted-grotesk-800-normal-Dl5-MP1T.woff"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-AGtDlYfu.css",
+    "name": "app",
+    "names": [
+      "app.css"
+    ],
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-Bp_1YKwh.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  }
+}
