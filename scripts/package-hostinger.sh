@@ -18,6 +18,7 @@ rsync -a --delete \
   --exclude '/public' --exclude '/vendor' --exclude '.env' --exclude 'database/database.sqlite' \
   --exclude 'storage/logs/*' --exclude 'storage/framework/cache/data/*' --exclude 'storage/framework/sessions/*' \
   --exclude 'storage/framework/views/*' --exclude 'storage/framework/testing/*' --exclude 'storage/app/private/*' --exclude 'storage/app/public/*' --exclude 'bootstrap/cache/*' \
+  --exclude 'database/seeders/DemoSeeder.php' --exclude 'database/factories' \
   --exclude '.phpunit*' --exclude 'public/_frame.html' --exclude 'phpunit.xml' --exclude 'boost.json' --exclude 'AGENTS.md' --exclude 'CLAUDE.md' --exclude 'README.md' \
   "$ROOT/" "$APP/"
 

@@ -88,6 +88,8 @@ class PublicSiteTest extends TestCase
         $this->assertStringContainsString('APP_NAME="Acado St. Lucia"', $env);
         $this->assertStringContainsString('APP_URL=https://acadostlucia.com', $env);
         $this->assertStringNotContainsString('peterandcompanydistribution', $env);
+        // The demo seeder (staff with the password "password") never ships in the Hostinger zip.
+        $this->assertStringContainsString("--exclude 'database/seeders/DemoSeeder.php'", (string) file_get_contents(base_path('scripts/package-hostinger.sh')));
     }
 
     public function test_facts_match_the_sources(): void

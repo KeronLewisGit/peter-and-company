@@ -250,6 +250,18 @@ class AdminTest extends TestCase
         $this->get('/careers')->assertSee('Sample vacancy');
     }
 
+    public function test_the_demo_seeder_refuses_to_run_in_production(): void
+    {
+        $this->app['env'] = 'production';
+        $this->expectException(\RuntimeException::class);
+        try {
+            // Called directly, as `db:seed --class=DemoSeeder --force` would.
+            $this->app->make(DemoSeeder::class)->run();
+        } finally {
+            $this->assertSame(0, User::count());
+        }
+    }
+
     public function test_database_seeder_only_creates_the_first_admin_from_env(): void
     {
         config(['peterco.admin' => ['name' => 'Owner', 'email' => 'owner@example.com', 'password' => 'a-long-password']]);

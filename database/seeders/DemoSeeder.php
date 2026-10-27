@@ -33,6 +33,10 @@ class DemoSeeder extends Seeder
 {
     public function run(): void
     {
+        // Demo staff all have the password "password": never on a live site.
+        if (app()->isProduction()) {
+            throw new \RuntimeException('DemoSeeder creates demo staff with the password "password" and is refused in production.');
+        }
         $users = collect([
             ['admin@peterco.test', 'Demo Administrator', Role::Admin],
             ['sales@peterco.test', 'Demo Trade Desk', Role::Sales],
