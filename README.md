@@ -1,25 +1,25 @@
-# Hadeed Motors
+# Acado St. Lucia (formerly Peter & Company Distribution)
 
-Website and sales desk for Hadeed Motors Ltd., the Nissan and Suzuki dealer on Old Parham Road, St John's, Antigua and Barbuda (since 1972).
+Website, trade ordering and back office for Acado St. Lucia Limited, the FMCG and pharmaceutical distributor at Cul De Sac, Castries, Saint Lucia. The company was Peter & Company Limited (founded 1891) and traded as Peter & Company Distribution (PCD) until it was renamed in February 2025. It is part of Acado Limited, the Agostini's and Goddard Enterprises joint venture.
+
+The current site (acadostlucia.com) is a brochure with a contact form. This build gives trade customers what they ask the sales reps for by phone: a catalogue, an order list, a trade account and credit application, and a place for brand owners and job applicants to land.
 
 ## What it does
 
-- **Public site.** Home, the new Nissan and Suzuki line-up with a page per model (trims and features from the dealership's own model pages), pre-owned stock with filters (make, body type, price, year, transmission) and photo galleries, finance with Finance & Development Co. (FDC), service and parts, trade-in, about, group companies, contact and hours, privacy notice, photo credits and a site map. Mobile-first, light and dark themes, and every page and filter works without JavaScript. Links from the old single-page site (`/index.html?page=vehicle&model=jimny` and the rest) redirect to the new pages.
-- **Five lead flows, each with a reference number and an email confirmation.**
-  - Test drive (`TD-26-00042`): a car from stock or the line-up, a weekday and a time; slots fill up (2 per slot by default) and close an hour before closing time.
-  - Service booking (`SV-…`): licence plate, odometer, service type, drop-off day and time. The form shows how many places are left each day and refuses a full day (daily capacity is set in Settings; claims run under a lock so two people can't take the last place).
-  - Parts request (`PT-…`): VIN (checked: 17 characters, never I, O or Q), the part, and an optional photo.
-  - Trade-in valuation (`TI-…`): the car, its condition and up to 6 photos.
-  - Finance pre-qualification (`FA-…`): residency, employment, income band, deposit, the car, optional ID and pay slips, and an explicit consent checkbox. It never asks for bank or card numbers and refuses them if sent.
-  - Plus a contact form (`EN-…`). All uploads go to the private disk, never the public web root.
-- **Loan estimator.** A clearly labelled estimate on `/finance` and on each priced car. It stays hidden until an administrator enters FDC's indicative rate in Settings. The browser and the server use the same formula (`resources/js/app.js` and `App\Support\LoanEstimator`), and the form also works without JavaScript.
-- **Sales desk** at `/admin`, with four roles:
-  - **Admin**: everything except opening finance documents.
-  - **Sales**: test drives, trade-ins, enquiries and finance leads (without the income details), plus inventory.
-  - **Service**: service bookings, parts and enquiries, plus the workshop calendar.
-  - **Finance**: finance applications only, and the only role that can open ID and pay slips. Every time a document is opened, it is logged on the lead's timeline.
+- **Public site.** Home, the brand portfolio by division (Wines, Spirits & Tobacco; Brewery, Beverages & Snacks; Food, Household, Frozen & Personal Care; Pharmaceuticals), the trade catalogue, the order list, trade accounts, principals, careers, about (history, values, retail stores), contact, privacy notice, photo credits and a site map. Mobile-first, light and dark themes, and every form and filter works without JavaScript.
+- **Trade catalogue.** Products by division, brand, category and search. No prices and no stock levels, on purpose: the trade desk confirms both on every order. The pharmaceutical range is never listed publicly.
+- **Order requests** (`OR-26-00042`). Anyone can add cases to a session order list from the catalogue, then send it with the business, district, delivery address and a preferred working day (weekdays, up to 14 days ahead, minus `peterco.closed_dates`). Quoting a trade account number (`PC-10004`, typed in any format) links the request to the account; held or closed accounts are refused. Items not in the catalogue go in "Other items".
+- **Pharmaceuticals are B2B only.** A pharmaceutical order is accepted only from an active pharmacy or clinic account with a licence on file. There is no consumer medicine sale anywhere on the site.
+- **Trade account / credit application** (`TA-…`). Business details, trade licence and VAT numbers, pharmacy licence and responsible pharmacist (pharmacies and clinics), cash-on-delivery or credit terms with trade references, and uploads of the trade licence, VAT certificate, owner ID, pharmacy licence and an optional bank reference. Files go to the private disk. Consent and a declaration are required, and bank or card numbers are refused.
+- **Principal enquiries** (`PR-…`) from brand owners, with categories and an optional deck. **Careers** with vacancies managed by HR and applications with a CV (`CV-…`). **Contact** enquiries (`EN-…`).
+- Every request gets a reference on screen and by email, and the office is emailed (per-team inboxes optional).
+- **Back office** with four roles:
+  - **Admin**: everything except opening credit documents.
+  - **Sales / trade desk**: orders, enquiries, principal enquiries, and that an account application exists (without its credit details); trade accounts (read only); the catalogue.
+  - **Credit**: trade account applications, the credit board, and approving an application, which opens a `PC-` trade account and emails the customer the number. The only role that can open trade licences, VAT certificates, IDs, pharmacy licences and bank references. Every opening is logged on the request's timeline.
+  - **HR**: job applications, CVs (also open to admin) and vacancies.
 
-  The dashboard leads with one number: leads nobody has called for more than 2 hours. It also shows trend tiles, the median time to first call, leads per day, a breakdown by type and the pipeline. The unified inbox has filters (type, status, assignee, overdue), search (press `/`) and CSV export. Each lead page has the status (new → contacted → appointment → negotiating → sold / lost), the assignee, the appointment, a notes timeline and one-tap call, WhatsApp or email. There is also a month calendar of workshop bookings against capacity, the finance pipeline board, inventory with multi-photo upload (resized to WebP by GD), cover photo, available / reserved / sold and featured flags, staff management and settings.
+  The dashboard leads with one number: requests still new after their response target (order requests 2 hours, enquiries 24 hours, account applications and principals 48 hours, job applications 5 days). It also shows up to four trend tiles for the role, requests per day, a breakdown by type, the oldest new requests and requested deliveries. The inbox has per-type stages, filters, search (press `/`) and CSV export. Each request page has the stage, the assignee, the delivery day for orders, a notes timeline and one-tap call, WhatsApp or email.
 
 ## Requirements
 
@@ -30,33 +30,41 @@ PHP 8.3 or 8.4 with GD, Composer 2, Node 20+ for building assets, and SQLite loc
 ```sh
 composer install
 cp .env.example .env && php artisan key:generate
-php artisan migrate --seeder=DemoSeeder   # demo staff, 9 sample vehicles, ~120 leads over 30 days
+php artisan migrate --seeder=DemoSeeder   # demo staff, 36 sample catalogue lines, accounts, vacancies, ~120 requests over 30 days
 npm install && npm run build
-php artisan serve --port=8105
+php artisan serve --port=8108
 ```
 
-Demo logins all use the password `password`: `admin@hadeed.test`, `sales@hadeed.test`, `service@hadeed.test` and `finance@hadeed.test`. Every demo vehicle is marked "Sample listing" and shows "Call for price". No prices, rates or stock levels are invented.
+Demo logins all use the password `password`: `admin@peterco.test`, `sales@peterco.test`, `credit@peterco.test` and `hr@peterco.test`. Every demo product is marked "Sample listing", every demo vacancy "Sample vacancy", and demo businesses start with "Demo". Demo products only use brands sourced from the company's own division pages. No prices, stock levels, staff names or figures are invented.
 
 ## Checks
 
 ```sh
-php artisan test                 # feature tests for every flow, roles, document access and capacity
+php artisan test                 # feature tests for every flow, role and policy, including credit-document access
 vendor/bin/phpstan analyse       # Larastan level 6, analysed as PHP 8.3
 vendor/bin/pint --test
 ```
 
+`npm run proposal` (with the dev server on 8108 and demo data) captures the screens and builds the sales proposal PDF into `dist/proposal/`.
+
 ## Deploying
 
-See [INSTALL-HOSTINGER.md](INSTALL-HOSTINGER.md). `scripts/package-hostinger.sh` builds `dist/hadeed-hostinger.zip`, which extracts straight into `public_html/`, with the app in `hadeed-app/`.
+See [INSTALL-HOSTINGER.md](INSTALL-HOSTINGER.md). `scripts/package-hostinger.sh` builds `dist/peterco-hostinger.zip`, which extracts straight into `public_html/`, with the app in `peterco-app/`.
 
 ## Before launch: confirm with the client
 
-- **Contact details.** The phone (268-481-2500), email and hours come from hadeedmotors.com, which lists the same number for sales, service and parts. Ask for department extensions and a WhatsApp Business number (`HADEED_WHATSAPP`).
-- **The line-up** in `config/hadeed.php`: Frontier, Grand Vitara, Baleno, Fronx, S-Presso, Jimny, S-Cross, XL7 and Carry, taken from the current site's model menu. Trim features are copied from its model pages. Trims that only had placeholder text there are left out.
-- **Prices.** Nothing is priced. The old site's 2021 data file had "MinPrice" figures, but they are five years old and have no currency, so they are not used.
-- **Finance.** The FDC process and document list come from fdcantigua.com. The indicative rate stays blank until FDC approves a figure for publication.
-- **Group companies.** HML Autos Ltd. needs a one-line description and link. Caribbean Premium Motors (BMW) links to its Facebook page.
-- **Public holidays** in `hadeed.closed_dates`, for the online booking calendar.
-- **Photos.** The showroom photo is the dealership's own (from hadeedmotors.com). The vehicle and Antigua photos are Creative Commons images from Wikimedia Commons, credited on `/photo-credits`. Replace them with photos of real stock and of the showroom.
-- **Logo.** The HM monogram uses the red and blue sampled from the current logo. Swap in the original artwork.
-- **Privacy notice**: a draft for the client's legal adviser.
+- **Name and branding.** The site uses "Acado St. Lucia", with "formerly Peter & Company Distribution", following the February 2025 rename (The Voice, 21 February 2025) and acadostlucia.com. Confirm how much of the PCD name customers still need to see, and whether Acado Limited has regional brand guidelines or a group web platform this must fit.
+- **Logo.** Taken from acadostlucia.com (800 × 205 PNG). Ask for vector artwork.
+- **Contact details.** Head office phone 758-457-7000 and the address (Cul De Sac, P.O. Box 84-85, Castries) are from acadostlucia.com/contact. No public email address or WhatsApp number was found, so `PETERCO_EMAIL` and `PETERCO_WHATSAPP` are blank. Ask for the trade desk, credit control and HR inboxes (`PETERCO_NOTIFY_*`), office hours, and any order line or WhatsApp Business number.
+- **Retail stores** in `peterco.retail`: names, locations and phone numbers from acadostlucia.com. Confirm they are current and add opening hours.
+- **The brand portfolio** in `peterco.divisions`, read from the logo grids on the four division pages (uploaded May 2025). Confirm every brand is still carried, add missing ones and remove lapsed agencies. Dated claims (Hennessy for 35+ years, Carib Brewery exclusive since 2017/2023, El Dorado, the 2020 Intersol Diquez award) come from The Voice.
+- **"Largest pharmaceutical distributor in St Lucia"** is the company's own claim on acadostlucia.com. Confirm it may be repeated, and confirm the pharmacy and clinic licensing rules and documents the credit team requires.
+- **Catalogue.** All 36 demo lines are samples. The real catalogue needs the company's product list with case sizes and codes (a CSV import can be added), and pack shots from the company or its principals.
+- **Trade account rules.** Account number format (`PC-` plus five digits is a placeholder), the documents asked for, credit terms, and whether existing account numbers should be imported.
+- **Delivery.** Weekday delivery up to 14 days ahead is an assumption. Confirm the delivery days by district and the public holidays in `peterco.closed_dates`.
+- **Response targets** per request type (2 hours for orders, and so on) are suggestions for the team to agree.
+- **Group and coverage claims** on the principals page (island-wide coverage, Acado Limited ownership) are from public sources. Staff numbers (201–500 appears only in a directory) and Chamber membership were not verified and are not used.
+- **Values and vision** are quoted from acadostlucia.com. **Leadership** is not named anywhere on the site.
+- **Photos.** The logo is the company's own. Every photograph is from Wikimedia Commons, credited on `/photo-credits`. The warehouse, bottling, bar, supermarket and pharmacy photos show similar operations elsewhere; replace them with the company's warehouse, fleet and team.
+- **Privacy notice**: a draft for the company's legal adviser (Saint Lucia's Data Protection Act).
+- **Domain.** Set `PETERCO_PREVIEW=true` on a temporary preview domain so a banner shows and search engines skip it.
