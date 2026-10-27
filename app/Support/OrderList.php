@@ -78,9 +78,14 @@ final class OrderList
         }
         $products = Product::listed()->whereIn('id', array_keys($items))->get()->keyBy('id');
 
-        return collect($items)
-            ->filter(fn (int $cases, int $id) => $products->has($id))
-            ->map(fn (int $cases, int $id) => ['product' => $products[$id], 'cases' => $cases])
-            ->values();
+        $lines = [];
+        foreach ($items as $id => $cases) {
+            $product = $products->get($id);
+            if ($product instanceof Product) {
+                $lines[] = ['product' => $product, 'cases' => $cases];
+            }
+        }
+
+        return collect($lines);
     }
 }

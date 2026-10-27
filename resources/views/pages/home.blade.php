@@ -98,7 +98,7 @@
                 </div>
                 <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ($featured as $p)
-                        <x-product-card :product="$p" :on-list="\App\Support\OrderList::items()[$p->id] ?? 0" />
+                        <x-product-card :product="$p" :on-list="\App\Support\OrderList::items()[$p->id] ?? 0" :class="$loop->index >= 4 ? 'max-sm:hidden' : ''" />
                     @endforeach
                 </div>
             </div>

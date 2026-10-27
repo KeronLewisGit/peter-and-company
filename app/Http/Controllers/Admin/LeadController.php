@@ -10,6 +10,7 @@ use App\Models\LeadFile;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -103,7 +104,7 @@ class LeadController extends Controller
         }
         if (array_key_exists('delivery_date', $data) && $lead->type === LeadType::Order) {
             $old = $lead->delivery_date?->toDateString();
-            $lead->delivery_date = $data['delivery_date'] ? \Illuminate\Support\Carbon::parse($data['delivery_date']) : null;
+            $lead->delivery_date = $data['delivery_date'] ? Carbon::parse($data['delivery_date']) : null;
             if ($old !== $lead->delivery_date?->toDateString()) {
                 $lead->notes()->create(['user_id' => $user->id, 'kind' => 'status', 'body' => 'Delivery day set to '.($lead->delivery_date?->format('D j M') ?? 'no date').'.']);
             }

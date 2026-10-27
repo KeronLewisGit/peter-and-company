@@ -291,6 +291,14 @@ class LeadFormController extends Controller
                     return;
                 }
             }
+            // A run of 9 or more digits in free text is almost certainly an account or card number.
+            foreach (['message', 'bank_name', 'trading_as'] as $field) {
+                if (preg_match('/\d[\d\s-]{7,}\d/', input_string($request->input($field))) && preg_match_all('/\d/', input_string($request->input($field))) >= 9) {
+                    $v->errors()->add($field, 'Please do not send bank or card numbers. We will never ask for them online.');
+
+                    return;
+                }
+            }
         });
     }
 }

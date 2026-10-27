@@ -13,7 +13,7 @@
                 <h2 id="overdue-title" class="text-xl font-bold">{{ $overdueCount === 1 ? 'request is' : 'requests are' }} past the response target</h2>
                 <p class="mt-1 text-ink-2">
                     @if ($overdueCount)
-                        The oldest arrived {{ $oldestOverdue?->diffForHumans() }}. Targets: @foreach ($types as $t){{ $t->label() }} {{ $t->targetLabel() }}@if(! $loop->last), @endif @endforeach.
+                        The oldest arrived {{ $oldestOverdue?->diffForHumans() }}. Targets: {{ collect($types)->map(fn ($t) => $t->label().' '.$t->targetLabel())->join(', ') }}.
                     @else
                         Every request has been picked up in time. {{ $newCount }} still new but inside the target.
                     @endif
@@ -31,7 +31,7 @@
         <div class="h-1.5 bg-[color:var(--stripe)]" aria-hidden="true"></div>
     </section>
 
-    <div @class(['mt-6 grid gap-4 sm:grid-cols-2', 'xl:grid-cols-4' => count($tiles) === 4, 'xl:grid-cols-3' => count($tiles) !== 4])>
+    <div @class(['mt-6 grid gap-4 sm:grid-cols-2', 'xl:grid-cols-4' => count($tiles) === 4, 'xl:grid-cols-3' => count($tiles) === 3])>
         @foreach ($tiles as $t)
             @if (($t['format'] ?? null) === 'minutes')
                 <a href="{{ $t['href'] }}" class="a-card block p-5 transition hover:shadow-lg">
@@ -92,6 +92,7 @@
                 <p class="border-t border-line px-5 py-6 text-ink-3">Nothing new waiting. Nice work.</p>
             @endforelse
         </section>
+        @if (auth()->user()->canWork(\App\Enums\LeadType::Order))
         <section class="a-card min-w-0" aria-labelledby="up-title">
             <div class="p-5 pb-3"><h2 id="up-title" class="font-semibold">Requested deliveries, next working days</h2></div>
             @forelse ($deliveries as $l)
@@ -104,5 +105,6 @@
                 <p class="border-t border-line px-5 py-6 text-ink-3">No delivery days requested in the next few days.</p>
             @endforelse
         </section>
+        @endif
     </div>
 </x-layouts.admin>

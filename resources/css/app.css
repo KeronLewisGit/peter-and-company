@@ -196,6 +196,7 @@
      */
     .rack-tag { display: inline-flex; align-items: stretch; font-family: var(--ff-display), sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; line-height: 1; border-radius: 3px; overflow: hidden; box-shadow: inset 0 -3px 0 var(--stripe), 0 0 0 1.5px var(--ink); background: var(--label); color: var(--label-ink); }
     .rack-tag > span { display: inline-flex; align-items: center; padding: 0.5rem 0.65rem 0.62rem; }
+    .rack-tag .code { white-space: nowrap; flex: none; }
     .rack-tag .code { background: var(--label-ink); color: var(--label); font-weight: 800; letter-spacing: 0.06em; font-variant-numeric: tabular-nums; }
     .on-dark .rack-tag { box-shadow: inset 0 -3px 0 var(--stripe), 0 0 0 1.5px #fff; }
 
@@ -320,7 +321,8 @@
     .case-marks > span { display: inline-flex; align-items: center; padding: 0.4rem 0.6rem; }
     .case-marks .div { background: var(--ink); color: var(--bg); font-weight: 800; letter-spacing: 0.06em; }
     .case-marks .up { margin-left: auto; gap: 0.15rem; color: var(--ink-3); }
-    .case-art { aspect-ratio: 4 / 3; display: grid; place-items: center; background: var(--kraft); background-image: repeating-linear-gradient(0deg, transparent 0 5px, color-mix(in srgb, var(--kraft-2) 45%, transparent) 5px 6px); color: var(--kraft-ink); }
+    .case-art { aspect-ratio: 3 / 1; display: grid; place-items: center; background: var(--kraft); background-image: repeating-linear-gradient(0deg, transparent 0 5px, color-mix(in srgb, var(--kraft-2) 45%, transparent) 5px 6px); color: var(--kraft-ink); }
+    @media (min-width: 640px) { .case-art { aspect-ratio: 4 / 3; } }
     .case-art .brand-stamp { font-family: var(--ff-display), sans-serif; font-weight: 800; font-size: 1.375rem; line-height: 1.05; text-align: center; letter-spacing: -0.01em; padding: 0.6rem 0.9rem; border: 2px solid currentColor; border-radius: 3px; max-width: 85%; transform: rotate(-2deg); text-transform: uppercase; overflow-wrap: anywhere; }
 
     /* Hero scrim for the photo on phones */

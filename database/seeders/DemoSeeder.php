@@ -225,12 +225,15 @@ class DemoSeeder extends Seeder
             ];
         };
 
-        $accountPayload = function (Carbon $at) use ($districts): array {
+        $applicants = ['Morning Star', 'Palm Grove', 'Blue Lagoon', 'Coconut Bay', 'Green Hill', 'Lighthouse', 'Sunrise', 'Hilltop', 'Bayside', 'Mango Tree', 'Seaview', 'Breadfruit', 'Harbour Light', 'Flamboyant', 'Cocoa Hill', 'Riverside'];
+        $nextApplicant = 0;
+        $accountPayload = function (Carbon $at) use ($districts, $applicants, &$nextApplicant): array {
             $type = Arr::random([TradeType::Supermarket, TradeType::Minimart, TradeType::Bar, TradeType::Hotel, TradeType::Pharmacy]);
+            $name = $applicants[$nextApplicant++ % count($applicants)];
             $terms = Arr::random([PaymentTerms::Cod, PaymentTerms::Credit]);
 
             return [
-                'business_name' => 'Demo '.Arr::random(['Morning Star', 'Palm Grove', 'Blue Lagoon', 'Coconut Bay', 'Green Hill', 'Lighthouse']).' '.match ($type) {
+                'business_name' => 'Demo '.$name.' '.match ($type) {
                     TradeType::Pharmacy => 'Pharmacy', TradeType::Bar => 'Bar', TradeType::Hotel => 'Guest House', default => 'Mart',
                 },
                 'consented_at' => $at,
@@ -254,11 +257,12 @@ class DemoSeeder extends Seeder
             }
             for ($n = 0, $count = mt_rand(2, 6); $n < $count; $n++) {
                 $at = $day->copy()->setTime(mt_rand(7, 16), mt_rand(0, 59));
-                $type = Arr::random([LeadType::Order, LeadType::Order, LeadType::Order, LeadType::Order, LeadType::Order, LeadType::Account, LeadType::Application, LeadType::Application, LeadType::Enquiry, LeadType::Principal]);
+                $mix = [LeadType::Order, LeadType::Order, LeadType::Order, LeadType::Order, LeadType::Order, LeadType::Account, LeadType::Application, LeadType::Application, LeadType::Enquiry, LeadType::Principal];
+                $type = $mix[array_rand($mix)];
                 [$lead, $who, $to, $note] = match ($type) {
                     LeadType::Order => [$make($type, $at, $order($at)), $sales[array_rand($sales)], Arr::random([LeadStatus::Confirmed, LeadStatus::Dispatched, LeadStatus::Delivered, LeadStatus::Delivered, LeadStatus::Delivered, LeadStatus::Cancelled]),
                         Arr::random(['Called and confirmed prices and stock. Delivery on the next run.', 'Confirmed by WhatsApp. Two lines substituted with the customer\'s OK.', 'Customer asked to add two cases; updated and confirmed.'])],
-                    LeadType::Account => [$make($type, $at, $accountPayload($at)), $credit, Arr::random([LeadStatus::Reviewing, LeadStatus::NeedsDocuments, LeadStatus::Declined]),
+                    LeadType::Account => [$make($type, $at, $accountPayload($at)), $credit, Arr::random([LeadStatus::Reviewing, LeadStatus::NeedsDocuments, LeadStatus::Approved, LeadStatus::Approved, LeadStatus::Declined]),
                         Arr::random(['Documents checked. Calling the trade reference.', 'VAT certificate is unreadable; asked the customer to send it again.', 'Not trading yet; asked them to reapply after opening.'])],
                     LeadType::Application => [$make($type, $at, ['vacancy_id' => mt_rand(0, 4) ? $vacancies[array_rand($vacancies)]->id : null, 'consented_at' => $at,
                         'message' => 'Sample applicant for the demo.', 'details' => ['role_interest' => null, 'district' => $districts[array_rand($districts)], 'available' => Arr::random(['now', '2w', '1m']), 'driving_licence' => Arr::random(['none', 'car', 'commercial'])]]),
@@ -272,6 +276,18 @@ class DemoSeeder extends Seeder
                 };
                 $minutes = $type === LeadType::Order ? mt_rand(10, 140) : mt_rand(60, 2000);
                 $progress($lead, $who, $to, $minutes, $note);
+                if ($to === LeadStatus::Approved) {
+                    $tradeType = TradeType::from((string) $lead->detail('trade_type'));
+                    $opened = TradeAccount::create([
+                        'business_name' => $lead->business_name, 'trade_type' => $tradeType, 'contact_name' => $lead->name, 'phone' => $lead->phone,
+                        'email' => $lead->email, 'district' => $lead->detail('district'), 'terms' => PaymentTerms::from((string) $lead->detail('terms')),
+                        'status' => AccountStatus::Active, 'pharmacy_licence' => $tradeType->isMedical() ? $lead->detail('pharmacy_licence_no') : null,
+                        'approved_by' => $who->id, 'approved_at' => $lead->status_changed_at, 'is_demo' => true,
+                    ]);
+                    $lead->forceFill(['trade_account_id' => $opened->id])->saveQuietly();
+                    $lead->notes()->create(['user_id' => $who->id, 'kind' => 'credit', 'body' => "Approved. Trade account {$opened->number} opened on {$opened->terms->short()} terms."])
+                        ->forceFill(['created_at' => $lead->status_changed_at])->saveQuietly();
+                }
             }
         }
 
