@@ -166,7 +166,7 @@ class Lead extends Model
 
     public function isOverdue(): bool
     {
-        return $this->status === LeadStatus::New && $this->created_at->lt(now()->subHours($this->type->responseHours()));
+        return $this->status === LeadStatus::New && $this->first_contacted_at === null && $this->created_at->lt(now()->subHours($this->type->responseHours()));
     }
 
     public function moveTo(LeadStatus $status): bool
@@ -222,13 +222,14 @@ class Lead extends Model
     }
 
     /**
-     * Still New and past the response target for its type (LeadType::responseHours).
+     * Still New, nobody has spoken to the customer yet, and past the response target for its
+     * type (LeadType::responseHours). Logging a call stops the clock.
      *
      * @param  Builder<self>  $query
      */
     public function scopeOverdue(Builder $query): void
     {
-        $query->where('status', LeadStatus::New)->where(function (Builder $q) {
+        $query->where('status', LeadStatus::New)->whereNull('first_contacted_at')->where(function (Builder $q) {
             foreach (LeadType::cases() as $type) {
                 $q->orWhere(fn (Builder $w) => $w->where('type', $type)->where('created_at', '<', now()->subHours($type->responseHours())));
             }

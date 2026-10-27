@@ -122,9 +122,8 @@ class LeadController extends Controller
 
         $lead->notes()->create(['user_id' => $user->id, 'kind' => 'note', 'body' => $data['body']]);
         // Logging a call on a new request moves it to its first working stage.
-        if (! empty($data['contacted']) && $lead->status === LeadStatus::New && $lead->type !== LeadType::Account) {
-            $next = $lead->type->statuses()[1];
-            $lead->moveTo($next);
+        $next = $lead->type->stageAfterFirstContact();
+        if (! empty($data['contacted']) && $lead->status === LeadStatus::New && $next && $lead->moveTo($next)) {
             $lead->notes()->create(['user_id' => $user->id, 'kind' => 'status', 'body' => 'Status changed to '.$next->label().'.']);
         }
         if (! empty($data['contacted'])) {

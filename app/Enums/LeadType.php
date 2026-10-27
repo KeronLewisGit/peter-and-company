@@ -82,6 +82,20 @@ enum LeadType: string
         };
     }
 
+    /**
+     * The stage "I spoke to the customer" moves a new request to. Speaking to a buyer is how
+     * the desk confirms an order; enquiries and principals become Contacted. Account and job
+     * applications stay where they are: credit control and HR decide those stages themselves.
+     */
+    public function stageAfterFirstContact(): ?LeadStatus
+    {
+        return match ($this) {
+            self::Order => LeadStatus::Confirmed,
+            self::Principal, self::Enquiry => LeadStatus::Contacted,
+            self::Account, self::Application => null,
+        };
+    }
+
     public function allows(LeadStatus $status): bool
     {
         return in_array($status, $this->statuses(), true);

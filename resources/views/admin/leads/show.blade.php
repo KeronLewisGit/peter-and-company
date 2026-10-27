@@ -197,7 +197,7 @@
                     <label for="body" class="sr-only">Add a note</label>
                     <textarea id="body" name="body" rows="3" class="a-input w-full" placeholder="Called, confirmed prices, delivery Thursday…" required maxlength="3000"></textarea>
                     <div class="flex flex-wrap items-center justify-between gap-2">
-                        <label class="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name="contacted" value="1" class="h-4 w-4" @checked($lead->status === \App\Enums\LeadStatus::New)>I spoke to the customer</label>
+                        <label class="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name="contacted" value="1" class="h-4 w-4" @checked($lead->status === \App\Enums\LeadStatus::New && $lead->first_contacted_at === null)>I spoke to {{ $lead->type === LeadType::Application ? 'the applicant' : 'the customer' }}</label>
                         <button class="a-btn a-btn-primary">Add note</button>
                     </div>
                 </form>

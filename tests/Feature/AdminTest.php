@@ -117,6 +117,28 @@ class AdminTest extends TestCase
         $this->actingAs($sales)->patch(route('admin.leads.update', $lead), ['assigned_to' => $hr->id])->assertSessionHasErrors('assigned_to');
     }
 
+    public function test_a_call_note_never_shortlists_an_applicant_and_stops_the_response_clock(): void
+    {
+        $hr = $this->staff(Role::Hr);
+        $cv = Lead::factory()->type(LeadType::Application)->create();
+        $cv->forceFill(['created_at' => now()->subDays(6)])->save();
+        $this->assertTrue($cv->fresh()->isOverdue());
+        $this->actingAs($hr)->get(route('admin.leads.show', $cv))->assertSee('I spoke to the applicant');
+
+        // The box is ticked by default on a new request; HR writing a rejection must not shortlist anyone.
+        $this->actingAs($hr)->post(route('admin.leads.note', $cv), ['body' => 'Not suitable: no driving licence.', 'contacted' => '1']);
+        $cv->refresh();
+        $this->assertSame(LeadStatus::New, $cv->status);
+        $this->assertNotNull($cv->first_contacted_at);
+        $this->assertFalse($cv->isOverdue());
+        $this->assertSame(0, Lead::overdue()->count());
+
+        // Enquiries still move to Contacted.
+        $enquiry = Lead::factory()->type(LeadType::Enquiry)->create();
+        $this->actingAs($this->staff(Role::Sales))->post(route('admin.leads.note', $enquiry), ['body' => 'Called back', 'contacted' => '1']);
+        $this->assertSame(LeadStatus::Contacted, $enquiry->fresh()->status);
+    }
+
     public function test_csv_export_respects_role_and_neutralises_formulas(): void
     {
         Lead::factory()->type(LeadType::Order)->create(['name' => '=HYPERLINK("x")']);
