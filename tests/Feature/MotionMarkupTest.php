@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
+use App\Models\Vacancy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -90,5 +91,43 @@ class MotionMarkupTest extends TestCase
             $this->assertStringContainsString('href="#step-'.$n.'"', $html);
         }
         $this->assertStringContainsString('aria-label="Application progress"', $html);
+    }
+
+    public function test_careers_is_linked_outside_the_about_drop_down_and_on_the_home_page(): void
+    {
+        $careers = route('careers.index');
+        $html = $this->get('/')->assertOk()->getContent();
+
+        // Header: strip the "About us" drop-down, then the main nav must still link to Careers.
+        preg_match('/<nav class="hidden items-center lg:flex" aria-label="Main">(.*?)<\/nav>/s', $html, $main);
+        $withoutDrops = preg_replace('/<div class="nav-drop">.*?<\/div>/s', '', $main[1]);
+        $this->assertStringContainsString('href="'.$careers.'" class="nav-link"', $withoutDrops);
+        // The orange top bar, and a top-level row in the mobile menu.
+        $this->assertStringContainsString('href="'.$careers.'" class="hidden min-h-11 items-center gap-1.5 px-2 font-semibold sm:inline-flex" data-topbar-careers', $html);
+        preg_match('/<nav class="mnav[^"]*" aria-label="Mobile">(.*?)<\/nav>/s', $html, $mobile);
+        $this->assertStringContainsString('<a href="'.$careers.'" >Careers</a>', preg_replace('/<div class="sub">.*?<\/div>/s', '', $mobile[1]));
+
+        // The home page careers band.
+        $this->assertStringContainsString('aria-labelledby="careers-title"', $html);
+    }
+
+    public function test_home_careers_band_counts_open_vacancies_or_asks_for_a_cv(): void
+    {
+        $this->get('/')->assertSee('Send your CV')->assertSee('No open vacancies today')->assertDontSee('open vacancies right now');
+
+        Vacancy::factory()->count(2)->create();
+        Vacancy::factory()->create(['published' => false]);
+        $open = Vacancy::open()->count();
+        $this->get('/')->assertSee('data-count="'.$open.'"', false)->assertSee('open vacancies right now')
+            ->assertSee(route('careers.index').'#vacancies', false);
+        $this->get('/careers')->assertSee('See open vacancies')->assertSee('Send a general application')->assertSee('id="vacancies"', false);
+    }
+
+    public function test_careers_nav_item_is_current_on_careers_pages(): void
+    {
+        $current = '/href="'.preg_quote(route('careers.index'), '/').'" class="nav-link"\s+aria-current="page"/';
+        $this->assertMatchesRegularExpression($current, $this->get('/careers')->getContent());
+        $this->assertMatchesRegularExpression($current, $this->get('/careers/apply')->getContent());
+        $this->assertDoesNotMatchRegularExpression($current, $this->get('/')->getContent());
     }
 }

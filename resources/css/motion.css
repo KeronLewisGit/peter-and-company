@@ -50,7 +50,7 @@
     .hero-mark .mk-spin { animation: mark-turn 1.6s cubic-bezier(0.6, 0, 0.2, 1) 1.1s both; }
     @keyframes orbit { to { transform: rotate(360deg); } }
     @keyframes mark-turn { from { transform: rotate(-90deg); } to { transform: none; } }
-    .js .hero:not(.is-inview) :is(.hero-photo img, .mk-spin) { animation-play-state: paused; }
+    .js :is(.hero, [data-inview]):not(.is-inview) :is(.hero-photo img, .mk-spin) { animation-play-state: paused; }
 }
 
 /* ---------- Division cards: 3D tilt with parallax and a soft glare (fine pointers only) ---------- */
@@ -238,4 +238,28 @@ html:not(.js) .stepper-bar { display: none; }
     /* Theme switch: no element morphs, just the new theme revealed in a circle from the button. */
     html.vt-theme .site-head, html.vt-theme .case { view-transition-name: none !important; }
     html.vt-theme::view-transition-old(root), html.vt-theme::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+}
+
+/* ---------- Careers band (home) ---------- */
+.careers-scrim { background: linear-gradient(90deg, rgb(0 20 51 / 0.94) 0%, rgb(0 20 51 / 0.86) 45%, rgb(0 20 51 / 0.55) 75%, rgb(0 20 51 / 0.35) 100%); }
+@media (max-width: 1023px) { .careers-scrim { background: rgb(0 20 51 / 0.86); } }
+.careers-orbit { position: absolute; z-index: -5; pointer-events: none; color: #fff; opacity: 0.1; width: 40rem; right: -14rem; top: 50%; margin-top: -20rem; }
+.careers-count { display: block; padding: 1.75rem; border-radius: var(--radius); background: rgb(0 20 51 / 0.72); border: 1px solid rgb(255 255 255 / 0.18); box-shadow: 0 24px 50px -24px rgb(0 0 0 / 0.6); backdrop-filter: blur(6px); }
+.careers-count:hover { border-color: var(--yellow); }
+.careers-count:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
+@media (prefers-reduced-motion: no-preference) {
+    .careers-orbit .mk-spin { animation: orbit 140s linear infinite reverse; }
+    .js .careers-band:not(.is-inview) .careers-orbit .mk-spin { animation-play-state: paused; }
+    .careers-count { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.2s ease; }
+    .careers-count:hover { transform: translateY(-3px); }
+}
+
+/* ---------- Careers page ---------- */
+.careers-pill { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.5rem; padding: 0 1rem; border-radius: 999px; background: var(--primary-soft); color: var(--ink); }
+.careers-pill .num { color: var(--primary); font-weight: 700; }
+.vacancy-card { border-left: 4px solid transparent; }
+.vacancy-card:hover { border-left-color: var(--orange); }
+@media (prefers-reduced-motion: no-preference) {
+    .vacancy-go { transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s ease, color 0.2s ease; }
+    .vacancy-card:hover .vacancy-go { transform: translateX(4px); background: var(--primary); color: var(--primary-ink); }
 }

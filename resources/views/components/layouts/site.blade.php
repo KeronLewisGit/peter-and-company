@@ -21,6 +21,8 @@
             ['href' => route('about').'#retail', 'label' => 'Our retail stores', 'current' => false],
             ['href' => route('careers.index'), 'label' => 'Careers', 'current' => request()->routeIs('careers.*')],
         ]],
+        // Careers also stands on its own, so job seekers find it without opening "About us".
+        ['route' => 'careers.index', 'match' => 'careers.*', 'label' => 'Careers'],
         ['route' => 'contact', 'match' => 'contact', 'label' => 'Contact'],
     ];
     $socialIcons = ['Facebook' => 'facebook', 'LinkedIn' => 'linkedin', 'Instagram' => 'instagram'];
@@ -88,13 +90,14 @@
                         <li><a class="inline-flex h-11 w-10 items-center justify-center rounded-full hover:bg-black/10" href="{{ $url }}" rel="noopener" target="_blank"><x-icon :name="$socialIcons[$network] ?? 'external'" class="h-4 w-4" /><span class="sr-only">{{ $network }} (opens in a new tab)</span></a></li>
                     @endforeach
                 </ul>
+                <a href="{{ route('careers.index') }}" class="hidden min-h-11 items-center gap-1.5 px-2 font-semibold sm:inline-flex" data-topbar-careers @if(request()->routeIs('careers.*')) aria-current="page" @endif><x-icon name="briefcase" class="h-3.5 w-3.5" />Careers</a>
                 <a href="{{ route('login') }}" class="hidden min-h-11 items-center pl-2 font-medium md:inline-flex">Staff</a>
             </div>
         </div>
     </div>
 
     <header class="site-head sticky top-0 z-40 border-b border-line bg-surface/95 shadow-sm backdrop-blur">
-        <div class="wrap flex h-[4.75rem] items-center gap-1.5 min-[400px]:gap-2">
+        <div class="wrap flex h-[4.75rem] items-center gap-1.5 min-[400px]:gap-2 lg:gap-1 xl:gap-2">
             <a href="{{ route('home') }}" class="mr-auto inline-flex min-h-11 flex-none items-center rounded" aria-label="Acado St. Lucia, home"><x-logo /></a>
 
             <nav class="hidden items-center lg:flex" aria-label="Main">
@@ -120,7 +123,7 @@
             <button type="button" onclick="toggleTheme(event)" class="hidden h-11 w-11 flex-none items-center justify-center rounded-full text-ink-2 hover:bg-surface-2 hover:text-ink sm:inline-flex" aria-label="Switch light or dark theme">
                 <x-icon name="moon" class="h-5 w-5 dark-hide" /><x-icon name="sun" class="hidden h-5 w-5 dark-show" />
             </button>
-            <a href="{{ route('order.show') }}" data-order-target class="btn btn-primary btn-sm ml-1 hidden flex-none whitespace-nowrap lg:inline-flex" @if(request()->routeIs('order.*')) aria-current="page" @endif><x-icon name="list" class="h-4 w-4" />Order list<span class="num rounded-full bg-black/20 px-2 text-sm" data-order-count>{{ $listCount }}</span></a>
+            <a href="{{ route('order.show') }}" data-order-target class="btn btn-primary btn-sm ml-1 hidden flex-none whitespace-nowrap lg:inline-flex" @if(request()->routeIs('order.*')) aria-current="page" @endif><x-icon name="list" class="h-4 w-4" /><span class="max-xl:sr-only">Order list</span><span class="num rounded-full bg-black/20 px-2 text-sm" data-order-count>{{ $listCount }}</span><span class="sr-only xl:hidden"> lines</span></a>
             <button type="button" class="menu-toggle inline-flex h-11 w-11 flex-none items-center justify-center rounded-full text-ink ring-1 ring-line-strong lg:hidden" @click="menu = !menu" :aria-expanded="menu.toString()" aria-controls="mobile-menu" aria-label="Menu">
                 <x-icon name="menu" x-show="!menu" /><x-icon name="x" x-show="menu" x-cloak />
             </button>

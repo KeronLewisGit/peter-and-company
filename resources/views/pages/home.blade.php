@@ -220,21 +220,48 @@
     </section>
 
     {{-- Careers + principals --}}
-    <section class="wrap mt-20 grid gap-6 md:mt-28 md:grid-cols-2" aria-label="Careers and principals">
-        <article class="card-link carton lift overflow-hidden">
-            <div class="card-img photo aspect-[16/8]"><x-photo key="castries-container-ship" alt="" sizes="(min-width: 768px) 45vw, 100vw" class="h-full w-full" /></div>
-            <div class="p-6">
+    {{-- Careers: a full band in Acado style, with the live count of open vacancies --}}
+    <section class="careers-band relative isolate mt-20 overflow-hidden bg-navy-950 text-white on-dark md:mt-28" aria-labelledby="careers-title" data-inview>
+        <div class="hero-photo absolute inset-0 -z-10"><x-photo key="acado-careers" alt="" sizes="100vw" class="h-full w-full !bg-navy-950" position="70% 30%" /></div>
+        <div class="careers-scrim absolute inset-0 -z-10" aria-hidden="true"></div>
+        <x-acado-mark variant="line" class="careers-orbit" />
+        <div class="wrap grid gap-10 py-16 md:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+            <div data-reveal>
+                <x-rack-tag label="Careers" />
+                <h2 id="careers-title" class="display-2 mt-3 max-w-2xl text-white">Work in the warehouse, on the road or in sales.</h2>
+                <p class="lead mt-4 max-w-[56ch] text-white/90">Warehouse, delivery, merchandising, sales and office roles at Cul De Sac and across the island. HR reads every application.</p>
+                <div class="mt-8 flex flex-wrap gap-3">
+                    @if ($openVacancies)
+                        <a href="{{ route('careers.index') }}#vacancies" class="btn btn-yellow">See {{ $openVacancies }} open {{ \Illuminate\Support\Str::plural('vacancy', $openVacancies) }}<x-icon name="arrow-right" class="nudge h-4 w-4" /></a>
+                        <a href="{{ route('careers.apply') }}" class="btn btn-on-dark">Send your CV</a>
+                    @else
+                        <a href="{{ route('careers.apply') }}" class="btn btn-yellow">Send your CV<x-icon name="arrow-right" class="nudge h-4 w-4" /></a>
+                        <a href="{{ route('careers.index') }}" class="btn btn-on-dark">About working here</a>
+                    @endif
+                </div>
+            </div>
+            <a href="{{ $openVacancies ? route('careers.index').'#vacancies' : route('careers.apply') }}" class="careers-count" data-reveal style="--reveal-delay: 150ms">
+                @if ($openVacancies)
+                    <span class="font-display num text-6xl font-bold text-yellow md:text-7xl" data-count="{{ $openVacancies }}" style="min-width: {{ strlen((string) $openVacancies) }}ch">{{ $openVacancies }}</span>
+                    <span class="mt-2 block font-display text-xl font-semibold text-white">open {{ \Illuminate\Support\Str::plural('vacancy', $openVacancies) }} right now</span>
+                    <span class="mt-1 block text-white/85">Or send a general application: HR keeps CVs on file for twelve months.</span>
+                @else
+                    <span class="font-display block text-3xl font-bold text-yellow">Send your CV</span>
+                    <span class="mt-2 block text-white/85">No open vacancies today. HR keeps general applications on file for the next opening.</span>
+                @endif
+            </a>
+        </div>
+    </section>
+
+    {{-- Principals --}}
+    <section class="wrap mt-20 md:mt-28" aria-label="Principals">
+        <article class="card-link carton lift grid overflow-hidden md:grid-cols-[0.9fr_1.1fr]">
+            <div class="card-img photo aspect-[16/8] md:aspect-auto"><x-photo key="castries-container-ship" alt="" sizes="(min-width: 768px) 45vw, 100vw" class="h-full w-full" /></div>
+            <div class="p-6 md:p-10">
                 <x-rack-tag label="Principals" />
                 <h2 class="display-3 mt-3"><a href="{{ route('principals') }}" class="stretch">Bring your brand to St Lucia.</a></h2>
                 <p class="mt-2 text-ink-2">Brand owners outside St Lucia can tell us about their range, markets and plans. Our management team replies by email.</p>
-            </div>
-        </article>
-        <article class="card-link carton lift overflow-hidden">
-            <div class="card-img photo aspect-[16/8]"><x-photo key="acado-careers" alt="" sizes="(min-width: 768px) 45vw, 100vw" class="h-full w-full" position="70% 30%" /></div>
-            <div class="p-6">
-                <x-rack-tag label="Careers" />
-                <h2 class="display-3 mt-3"><a href="{{ route('careers.index') }}" class="stretch">Work in the warehouse, on the road or in sales.</a></h2>
-                <p class="mt-2 text-ink-2">{{ $openVacancies ? $openVacancies.' open '.\Illuminate\Support\Str::plural('vacancy', $openVacancies).' right now, and' : 'No open vacancies today, but' }} you can send a general application with your CV at any time.</p>
+                <p class="mt-5 inline-flex items-center gap-2 font-semibold text-link">Make a principal enquiry<x-icon name="arrow-right" class="h-4 w-4" /></p>
             </div>
         </article>
     </section>

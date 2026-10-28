@@ -6,7 +6,7 @@
     phones), and the band ends in Acado's orange-to-yellow rule. Extra content (breadcrumbs,
     actions, filters) goes in the slot.
 --}}
-<section {{ $attributes->merge(['class' => 'relative isolate overflow-hidden bg-surface']) }} data-hero="page">
+<section {{ $attributes->merge(['class' => 'relative isolate overflow-hidden bg-surface']) }} data-hero="page" data-inview>
     <div class="pointer-events-none absolute -right-40 -top-48 -z-10 h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(closest-side,rgb(255_189_11/0.16),rgb(226_104_14/0.08)_55%,transparent)]" aria-hidden="true"></div>
     <div @class(['wrap grid gap-8 pb-10 pt-9 md:pb-14 md:pt-14 lg:items-center lg:gap-14', 'lg:grid-cols-[1.2fr_0.8fr]' => $photo && ! $square, 'lg:grid-cols-[1.35fr_0.65fr]' => $photo && $square])>
         <div class="min-w-0">
