@@ -66,7 +66,7 @@ async function pageFor(account) {
       await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle0' }), page.evaluate((i, cases) => {
         const f = document.querySelectorAll('form[action$="/order/list"]')[i];
         f.querySelector('input[name=cases]').value = cases;
-        f.requestSubmit();
+        f.submit(); // a plain post (the page script adds lines in place without navigating)
       }, i, cases)]);
     }
   } else if (account) {

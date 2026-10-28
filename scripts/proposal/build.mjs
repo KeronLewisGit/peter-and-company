@@ -38,7 +38,21 @@ const FONTS = [
 const LOGO = (white) => `<img class="logo" src="${img(path.resolve(`public/img/brand/acado-st-lucia${white ? '-white' : ''}.png`))}" alt="Acado St. Lucia">`;
 // Eyebrow section label with the orange bar, as on the site.
 const tag = (code, label) => `<p class="rack"><i>${esc(code)}</i><span>${esc(label)}</span></p>`;
-const HERO = img(path.resolve('public/img/acado-team-1366.webp'));
+// The cover photo as a JPEG (Chrome would embed the WebP uncompressed); falls back to the WebP without sips.
+const HERO = (() => {
+  const src = path.resolve('public/img/acado-team-1366.webp');
+  const out = path.join(SHOTS, 'cover.jpg');
+  try { execFileSync('sips', ['-s', 'format', 'jpeg', '-s', 'formatOptions', '72', src, '--out', out], { stdio: 'ignore' }); return img(out); } catch { return img(src); }
+})();
+// Motion frame strips (scripts/proposal/motion.mjs).
+const MOTION_FILE = path.join(SHOTS, 'motion', 'motion.json');
+const MOTION = fs.existsSync(MOTION_FILE) ? JSON.parse(fs.readFileSync(MOTION_FILE, 'utf8')) : null;
+const JS_GZ = process.env.JS_GZ ?? (() => {
+  const f = fs.readdirSync(ASSETS).find((n) => /^app-.*\.js$/.test(n));
+  return f ? (Math.round(execFileSync('gzip', ['-c', path.join(ASSETS, f)]).length / 100) / 10) + ' kB' : '';
+})();
+const strip = (key, labels, cls = '') => `<div class="strip ${cls}" style="--n:${MOTION[key].length}">${MOTION[key].map((f, i) => `<figure><img src="${img(f)}" alt="${esc(labels[i] ?? '')}"><figcaption>${esc(labels[i] ?? '')}</figcaption></figure>`).join('')}</div>`;
+const motionBlock = (title, text, body) => `<div class="mblock"><h3>${esc(title)}</h3><p class="mtext">${esc(text)}</p>${body}</div>`;
 
 /** Hand-written captions per slice (key = screen name, index = slice number). */
 const CAPTIONS = {
@@ -46,10 +60,12 @@ const CAPTIONS = {
     'The familiar Acado look, modernised: the orange top bar, the white header with the uppercase menu, and your own staff photo from the February 2025 rebrand as the hero, with the two trade actions and the facts the company publishes – trading since 1891, four divisions, the brands on its division pages, and the Acado Limited group. Then quick routes for the five people who visit.',
     'Your “About us” band, in your own words, and the orange “Our portfolio” band with the four divisions and your own division images.',
     'Sample catalogue lines, each with the brand’s logo tile from your division pages, a cases box and “Add to order”. No prices anywhere: the trade desk confirms them.',
-    'Featured brands: the logo grid from your home page, now linking each brand to its division.',
-    'How ordering works in four steps, and the pharmaceutical division, which is clearly for licensed pharmacies, hospitals and clinics only.',
-    'History since 1891, then the panels for brand owners and job seekers.',
-    'Your navy “Looking for an outstanding distribution partner?” band, on every page, and the orange footer with the white logo, tagline, head-office number, address and social links.',
+    'Featured brands: your logo grid, now two rows of logos that drift in opposite directions (shown here as it appears with reduced motion), each linking to its division.',
+    'How ordering works in four steps: on a desktop the panel stays in view while the steps scroll past, and a van drives to each stop.',
+    'Island-wide delivery: a map of the ten districts with routes drawn out of Cul De Sac, and every district’s delivery days as text. The days are a sample until the trade desk confirms them.',
+    'The pharmaceutical division, clearly for licensed pharmacies, hospitals and clinics only, and the company’s history since 1891 on a line that draws itself.',
+    'Careers gets its own band, with the live count of open vacancies (or “Send your CV” when there are none), then the panel for brand owners and your navy “Looking for an outstanding distribution partner?” band, which closes every page.',
+    'The orange footer with the white logo, tagline, head-office number, address and social links.',
   ],
   brands: [`Every division on one page with its blurb, dated facts from The Voice (Hennessy for 35+ years, Carib Brewery exclusive), and all ${BRANDS} brands from your division pages as logo tiles, each with the brand name as real text underneath, so buyers and search engines can read it.`, 'Wines, Spirits & Tobacco, continued.', 'Brewery, Beverages & Snacks. Food, Household, Frozen & Personal Care and Pharmaceuticals (marked for licensed buyers only) follow on the same page.'],
   division: ['A division page: your division image, the brands and categories, and a route to order from that division.', 'The brand logos in the division, with every name as text.', 'The catalogue lines in that division, ready to add to an order list.'],
@@ -57,7 +73,7 @@ const CAPTIONS = {
   order: ['The order list after a buyer added three lines: change quantities or remove a line, add items that aren’t in the catalogue, and tick pharmaceuticals only with an approved licensed account.', 'Who is ordering, the trade account number (optional; typed in any format), district, delivery address and a preferred working day. The buyer gets a reference number on screen and by email.'],
   'trade-account': ['The trade account application, step by step: who is applying, the business, trade licence and VAT, and the extra licence details pharmacies and clinics must give.', 'Cash-on-delivery or credit terms with trade references, then the trade licence, VAT certificate and owner ID uploads. They are stored privately and only credit control can open them.', 'Consent, the declaration and send.'],
   principals: ['For brand owners outside St Lucia: what a principal gets, and an enquiry form with categories and an optional presentation upload.', 'Principal enquiry, continued.'],
-  careers: ['Vacancies (samples in the demo) and a general application. HR publishes real vacancies from the back office.', 'Each vacancy links to its own page and the application form; HR keeps general applications on file.'],
+  careers: ['Careers is in the main menu and the top bar, not hidden under About us. The page opens with the open-vacancy count and two actions, then the vacancies (samples in the demo) and a general application. HR publishes real vacancies from the back office.', 'Each vacancy links to its own page and the application form; HR keeps general applications on file.'],
   about: ['Who we are, with the rebrand photo, and the company’s history in its own words, in the grey band as on acadostlucia.com.', 'A six-date timeline from 1891 to the 2025 rename, and your published vision over your own photo.', 'Your five core values on the orange band, as on your site.', 'The five retail stores with your own store photos and their numbers.'],
   contact: ['Head-office phone and address with directions, and an enquiry form routed by topic.', 'Faster routes to the right team: orders, trade accounts, principals and jobs.'],
   login: ['Staff sign-in for the back office. Sign-in is rate-limited, and switched-off accounts cannot sign in.'],
@@ -104,7 +120,7 @@ const SECTIONS = [
 ];
 
 const FEATURES = [
-  ['Public website', ['Phone-first, light and dark themes', 'Your colours, fonts and photos', 'Brand logos with searchable names', 'Trade catalogue, no prices', 'Order list and order requests', 'Delivery-day choice', 'Trade account and credit application', 'Principal enquiries', 'Careers with CV upload', 'Sitemap and structured data']],
+  ['Public website', ['Phone-first, light and dark themes', 'Your colours, fonts and photos', 'Brand logos with searchable names', 'Motion: delivery map, logo marquee, page transitions', 'Trade catalogue, no prices', 'Order list and order requests', 'Delivery-day choice', 'Trade account and credit application', 'Principal enquiries', 'Careers with CV upload', 'Sitemap and structured data']],
   ['Back office', ['Four roles: admin, trade desk, credit, HR', 'Response targets per request type', 'Order stages and delivery days', 'Credit board and account approval', 'Trade accounts with PC- numbers', 'Catalogue editor', 'Vacancies and applications', 'CSV export']],
   ['Privacy', ['Credit documents: credit control only', 'CVs: HR and administrators only', 'Every document opening logged', 'Files stored outside the web root', 'Bank and card numbers refused']],
   ['Platform', ['Laravel 13 on PHP 8.3', 'Runs on standard shared hosting', 'HTTPS, security headers, spam protection', `${TESTS} automated tests`, 'Packaged installer and written guide']],
@@ -297,6 +313,11 @@ const STYLE = `
   .sub-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 4px; margin-bottom: 6px; } .sub-head h3 { font-size: 12.5pt; color: var(--navy); }
   .cap { margin: 6px 0 0; font-size: 8.9pt; line-height: 1.38; color: var(--ink-2); border-left: 3px solid var(--orange); padding-left: 8px; flex: none; }
   .phones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 14px 0.15in 0; } .phones figure { display: block; } .phones img { display: block; width: 100%; height: auto; border-radius: 18px; border: 6px solid var(--navy); } .phones figcaption { text-align: center; font-size: 9pt; color: var(--ink-3); margin-top: 6px; }
+  .motion .mblock { margin: 10px 0 4px; } .motion .mblock h3 { font-size: 12.5pt; color: var(--navy); } .motion .mtext { margin: 2px 0 6px; font-size: 9.4pt; color: var(--ink-2); }
+  .strip { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 8px; } .strip figure { margin: 0; display: block; } .strip img { display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--line); }
+  .strip figcaption { margin-top: 3px; font-size: 7.8pt; color: var(--ink-3); font-family: 'Montserrat', sans-serif; font-weight: 600; letter-spacing: .04em; }
+  .strip.tall img { max-height: 3.6in; width: auto; max-width: 100%; margin: 0 auto; } .strip.tall figure { text-align: center; }
+  .strip.one { grid-template-columns: 1fr; } .strip.short img { max-height: 2.55in; width: auto; max-width: 100%; }
   footer.foot { margin-top: auto; padding-top: 8px; font-size: 7.8pt; color: var(--ink-3); display: flex; justify-content: space-between; flex: none; }
 `;
 
@@ -382,6 +403,41 @@ ${PHONES.map((row, i) => `
   <div class="phones">${row.map(([k, c]) => `<figure><img src="${img(chunks[k].chunks[0])}" alt="${esc(c)}"><figcaption>${esc(c)}</figcaption></figure>`).join('')}</div>
   ${foot()}
 </section>`).join('')}
+
+${MOTION ? `
+<section class="page prose motion">
+  ${tag('M', 'Motion and interaction')}
+  <h1>A website that feels a level above</h1>
+  <p>The new site moves the way a modern brand does: calm, quick and on brand, never in the way. Every effect is built from your own material – the Acado mark, your colours, your photo and your districts – and each one does a job.</p>
+  ${motionBlock('Hero entrance', 'The rebrand photo drifts slowly, the headline rises word by word, the four leaves of the Acado mark assemble and turn, and the figures count up to 1891, 4 divisions and ' + BRANDS + ' brands.', strip('hero', ['0.2 s', '0.5 s', '1 s', '3 s'], 'wide'))}
+  ${motionBlock('Island-wide delivery map', 'Routes draw out of Cul De Sac to all ten districts as the map scrolls into view, vans run along them, and pointing at a district (or tabbing to it) shows its delivery days. The days are a sample until your trade desk confirms them.', strip('map', ['Arriving', 'Routes drawing', 'All ten districts', 'Soufrière on hover'], 'tall'))}
+  ${foot()}
+</section>
+<section class="page prose motion">
+  <header class="shot-head"><div><p class="eyebrow">Motion and interaction · continued</p><h2>Ordering, made tangible</h2></div></header>
+  ${motionBlock('From list to loading bay', 'The four ordering steps scroll past a panel that stays in view; the van drives to each stop as its step becomes active.', strip('steps', ['Step 1', 'Step 2', 'Step 4']))}
+  ${motionBlock('Add to order', 'The line is added without leaving the page: its logo flies to the order list, the count bumps and a toast confirms, with a link to the list. Without JavaScript the same button posts the form as before.', strip('order', ['Added', 'On its way', 'Confirmed']))}
+  ${motionBlock('Light and dark', 'Switching theme reveals the other one in a circle that grows from the button, and moving between pages cross-fades smoothly instead of flashing white.', strip('theme', ['Light', 'Switching', 'Dark']))}
+  ${foot()}
+</section>
+<section class="page prose motion">
+  <header class="shot-head"><div><p class="eyebrow">Motion and interaction · continued</p><h2>Your brands, alive on the page</h2></div></header>
+  ${motionBlock('Brand-logo marquee', 'Two rows of your brand logos drift in opposite directions, endlessly. Pointing at them, or tabbing into them, pauses them, and a Pause button stops them for good.', strip('marquee', ['Two rows, opposite directions'], 'one'))}
+  ${motionBlock('Division cards', 'Your four division cards tilt toward the pointer, with the picture drifting the other way and a soft glare. Also: a scroll-progress bar in Acado orange, a warm spotlight on the navy partner band, a history line that draws itself from 1891 to 2025, and a progress stepper on the trade account application.', strip('tilt', ['Tilt and glare'], 'one short'))}
+  <div class="cols" style="margin-top:12px">
+    <div class="card"><h3>Built responsibly</h3><ul>
+      <li>Visitors who ask their device for reduced motion get a still, complete page: the logos stand in a grid and the map is already drawn.</li>
+      <li>Everything works without JavaScript; the page is never hidden waiting for a script.</li>
+      <li>Only smooth, GPU-friendly properties are animated, with no layout shift, and loops pause when off screen.</li>
+    </ul></div>
+    <div class="card"><h3>Still fast and accessible</h3><ul>
+      <li>No animation library: the whole script is ${esc(JS_GZ)} gzipped.</li>
+      <li>AA contrast in light and dark, 44-pixel touch targets, and every map district and control reachable by keyboard.</li>
+      <li>No sound, and nothing that flashes.</li>
+    </ul></div>
+  </div>
+  ${foot()}
+</section>` : ''}
 
 <section class="page prose">
   ${tag('03', 'Technology, hosting & security')}
