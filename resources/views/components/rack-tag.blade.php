@@ -1,2 +1,3 @@
-@props(['code', 'label'])
-<p {{ $attributes->merge(['class' => 'rack-tag']) }}><span class="code">{{ $code }}</span><span>{{ $label }}</span></p>
+@props(['code' => null, 'label'])
+{{-- Eyebrow label above a section heading. ($code is kept for older call sites and not shown.) --}}
+<p {{ $attributes->merge(['class' => 'rack-tag']) }}>{{ $label }}</p>

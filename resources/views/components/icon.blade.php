@@ -60,6 +60,10 @@ $paths = [
     'bottle' => '<path d="M10 2h4M10 2v4l-2 3v12a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V9l-2-3V2M8 13h8"/>',
     'basket' => '<path d="m5 11 4-7M19 11l-4-7M2 11h20l-1.6 8.1a2 2 0 0 1-2 1.6H5.6a2 2 0 0 1-2-1.6zM9 15v2M15 15v2"/>',
     'briefcase' => '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2M2 13h20"/>',
+    'chevron-down' => '<path d="m6 9 6 6 6-6"/>',
+    'facebook' => '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>',
+    'instagram' => '<rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.4A4 4 0 1 1 12.6 8 4 4 0 0 1 16 11.4zM17.5 6.5h.01"/>',
+    'linkedin' => '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/>',
 ];
 @endphp
 <svg {{ $attributes->merge(['class' => 'h-5 w-5', 'aria-hidden' => 'true', 'focusable' => 'false']) }} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{!! $paths[$name] ?? '' !!}</svg>

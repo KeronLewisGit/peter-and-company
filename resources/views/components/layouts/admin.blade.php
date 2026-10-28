@@ -24,14 +24,14 @@
     <a href="#content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface focus:px-4 focus:py-3">Skip to content</a>
 
     <div class="fixed inset-0 z-30 bg-black/40 lg:hidden" style="display:none" x-show="nav" x-transition.opacity @click="nav = false"></div>
-    <aside class="fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col bg-crate-950 transition-transform lg:translate-x-0" :class="nav && 'translate-x-0'" aria-label="Dashboard">
+    <aside class="fixed inset-y-0 left-0 z-40 admin-side flex w-64 -translate-x-full flex-col transition-transform lg:translate-x-0" :class="nav && 'translate-x-0'" aria-label="Dashboard">
         <a href="{{ route('admin.dashboard') }}" class="flex h-16 items-center px-5"><x-logo tone="light" :small="true" /></a>
         <nav class="admin-nav flex-1 space-y-1 px-3 pt-4">
             @foreach ($nav as [$label, $route, $match, $icon, $badge, $show])
                 @continue(! $show)
                 <a href="{{ route($route) }}" @if(request()->routeIs($match)) aria-current="page" @endif>
                     <x-icon :name="$icon" class="h-[18px] w-[18px]" />{{ $label }}
-                    @if ($badge)<span class="num ml-auto rounded bg-sky px-2 py-0.5 text-xs font-bold text-[#0d1b24]" aria-label="{{ $badge }} new">{{ $badge }}</span>@endif
+                    @if ($badge)<span class="num ml-auto rounded-full bg-orange px-2 py-0.5 text-xs font-bold text-[#1a1a1a]" aria-label="{{ $badge }} new">{{ $badge }}</span>@endif
                 </a>
             @endforeach
         </nav>

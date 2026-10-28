@@ -10,7 +10,7 @@
     ][$code] ?? ['Something went wrong', 'Please try again.'];
 @endphp
 <x-layouts.site :title="$copy[0]" :mobile-bar="false">
-    <x-page-hero :title="$copy[0]" :lead="$copy[1]" :code="$code" label="Error" photo="marigot-bay" alt="" :label-code="'ERR '.$code" label-line="Return to sender" />
+    <x-page-hero :title="$copy[0]" :lead="$copy[1]" label="Error" photo="marigot-bay" alt="" />
     <section class="wrap mt-12 flex flex-wrap gap-3 md:mt-16">
         <a href="{{ route('home') }}" class="btn btn-primary">Go to the home page<x-icon name="arrow-right" class="nudge h-4 w-4" /></a>
         @if ($code === '404')

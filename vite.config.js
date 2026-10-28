@@ -4,22 +4,22 @@ import { bunny } from 'laravel-vite-plugin/fonts';
 import tailwindcss from '@tailwindcss/vite';
 
 // Fonts are downloaded at build time and served from /build, so visitors never hit a font CDN.
-// Two families only: Schibsted Grotesk, a sturdy newspaper-and-signage grotesque, for headings,
-// rack labels and stencilled numerals; Figtree, open and friendly at small sizes, for everything
-// people read and type into.
+// Two families only: Montserrat, the face acadostlucia.com uses, for headings, navigation, buttons
+// and labels (light uppercase section titles, as on the company's site); Figtree, open and easy to
+// read at 17px, for body copy and everything people type into.
 export default defineConfig({
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.js'],
             refresh: true,
             fonts: [
-                bunny('Schibsted Grotesk', {
+                bunny('Montserrat', {
                     alias: 'display',
                     variable: '--ff-display',
-                    weights: [500, 700, 800],
+                    weights: [300, 400, 500, 600, 700],
                     styles: ['normal'],
                     subsets: ['latin'],
-                    preload: [{ weight: 800 }],
+                    preload: [{ weight: 600 }],
                     fallbacks: ['ui-sans-serif', 'system-ui', 'sans-serif'],
                 }),
                 bunny('Figtree', {
