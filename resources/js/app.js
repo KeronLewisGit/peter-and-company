@@ -1,15 +1,16 @@
 import Alpine from 'alpinejs';
+import { startMotion, themeTransition } from './motion';
 
 document.documentElement.classList.add('js'); // also set in <head>; kept for safety
 
 /* Theme toggle. The initial theme is set by an inline script in <head> to avoid a flash. */
-window.toggleTheme = () => {
+window.toggleTheme = (event) => themeTransition(() => {
     const root = document.documentElement;
     const current = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     const next = current === 'dark' ? 'light' : 'dark';
     root.dataset.theme = next;
     try { localStorage.setItem('theme', next); } catch (e) { /* storage blocked: the choice lasts this page only */ }
-};
+}, event);
 
 /* Scroll reveal */
 const reveal = () => {
@@ -85,5 +86,6 @@ Alpine.data('adminShell', () => ({
 
 window.Alpine = Alpine;
 Alpine.start();
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', reveal);
-else reveal();
+const ready = () => { reveal(); startMotion(); };
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready);
+else ready();

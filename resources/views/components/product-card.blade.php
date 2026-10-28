@@ -5,7 +5,7 @@
     $logo = brand_logo($product->brand);
 @endphp
 {{-- A catalogue line: its pack shot, or the brand's logo tile as published on acadostlucia.com, or the brand name as a text tile. --}}
-<article id="p-{{ $product->slug }}" {{ $attributes->merge(['class' => 'case']) }}>
+<article id="p-{{ $product->slug }}" {{ $attributes->merge(['class' => 'case']) }} style="view-transition-name: p-{{ $product->id }}">
     <p class="case-marks">{{ $product->category ?? ($division['short'] ?? '') }}</p>
     @if ($product->photoUrl())
         <div class="case-art"><img src="{{ $product->photoUrl() }}" alt="" loading="lazy" decoding="async" class="p-3"></div>

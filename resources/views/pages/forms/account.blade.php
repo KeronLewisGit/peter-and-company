@@ -13,10 +13,10 @@
                 <form method="POST" action="{{ route('account.store') }}" enctype="multipart/form-data" class="space-y-12"
                       x-data="tradeForm({ tradeType: @js(old('trade_type', '')), vat: @js(old('vat_registered', '')), terms: @js(old('terms', 'cod')) })" @submit="submit">
                     @csrf
-                    <x-contact-fields :step="1" title="Who is applying" />
+                    <x-contact-fields :step="1" title="Who is applying" id="step-1" data-form-step />
                     <x-field name="position" label="Your position in the business" :required="true" maxlength="80" hint="e.g. Owner, Manager, Director, Purchasing officer" />
 
-                    <fieldset class="space-y-5">
+                    <fieldset class="space-y-5" id="step-2" data-form-step>
                         <legend class="fieldset-title mb-5"><span class="step">2</span>Your business</legend>
                         <div class="grid gap-5 sm:grid-cols-2">
                             <x-field name="business_name" label="Registered business name" :required="true" maxlength="160" autocomplete="organization" />
@@ -54,7 +54,7 @@
                         </div>
                     </fieldset>
 
-                    <fieldset class="space-y-5">
+                    <fieldset class="space-y-5" id="step-3" data-form-step>
                         <legend class="fieldset-title mb-5"><span class="step">3</span>Payment terms</legend>
                         <div class="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Payment terms">
                             @foreach (\App\Enums\PaymentTerms::cases() as $t)
@@ -77,7 +77,7 @@
                         </div>
                     </fieldset>
 
-                    <fieldset class="space-y-5">
+                    <fieldset class="space-y-5" id="step-4" data-form-step>
                         <legend class="fieldset-title mb-5"><span class="step">4</span>Documents</legend>
                         <p class="-mt-2 text-ink-2">Stored privately, outside the public website. Only credit control can open them, and every time a document is opened it is logged.</p>
                         <x-field name="trade_licence" :kept="$kept['trade_licence'] ?? null" label="Trade licence" type="file" :required="true" accept=".pdf,.jpg,.jpeg,.png,.heic" :hint="$docHint" />
@@ -87,7 +87,7 @@
                         <div x-show="terms === 'credit'"><x-field name="bank_reference" :kept="$kept['bank_reference'] ?? null" label="Bank reference letter" type="file" :optional="true" accept=".pdf,.jpg,.jpeg,.png,.heic" /></div>
                     </fieldset>
 
-                    <fieldset class="space-y-5">
+                    <fieldset class="space-y-5" id="step-5" data-form-step>
                         <legend class="fieldset-title mb-5"><span class="step">5</span>Confirm and send</legend>
                         <x-field name="message" label="Anything else credit control should know" type="textarea" :optional="true" rows="3" maxlength="1500" />
                         <label class="choice"><input type="checkbox" name="consent" value="1" @checked(old('consent')) required><span>I agree that Acado St. Lucia may check these documents and contact my trade references and bank.</span></label>
@@ -99,6 +99,16 @@
                 </form>
             </div>
             <aside class="space-y-5 lg:sticky lg:top-28">
+                {{-- Progress: links to each part of the form. With JavaScript it follows where you are and ticks finished parts. --}}
+                <nav class="carton stepper p-6 max-lg:hidden" aria-label="Application progress" data-stepper>
+                    <h2 class="text-lg font-bold">Your application</h2>
+                    <ol class="stepper-list mt-4">
+                        @foreach (['Who is applying', 'Your business', 'Payment terms', 'Documents', 'Confirm and send'] as $i => $label)
+                            <li><a href="#step-{{ $i + 1 }}" data-stepper-link="step-{{ $i + 1 }}"><span class="stepper-dot"><span class="num">{{ $i + 1 }}</span><x-icon name="check" class="stepper-tick h-4 w-4" /></span><span class="stepper-label">{{ $label }}<span class="sr-only" data-stepper-state></span></span></a></li>
+                        @endforeach
+                    </ol>
+                    <div class="stepper-bar mt-5" aria-hidden="true"><span></span></div>
+                </nav>
                 <div class="carton p-6">
                     <h2 class="text-lg font-bold">What you will need</h2>
                     <ul class="mt-3 space-y-2 text-[0.9375rem] text-ink-2">

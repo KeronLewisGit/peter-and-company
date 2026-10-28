@@ -1,0 +1,241 @@
+/*
+ * Motion and interaction (Oct 2026). Rules of the road:
+ *  - Every keyframe animation and transition that moves something sits inside
+ *    `prefers-reduced-motion: no-preference`, so reduced motion gets the finished, still page.
+ *  - Content is never hidden behind a JavaScript-only class: `.js` rules only set a *starting* state
+ *    that the script always resolves, and without JavaScript everything renders complete.
+ *  - Only transform and opacity animate (plus the map routes' stroke offset and the one-off
+ *    theme reveal). Long-running loops pause off screen (`.is-inview`, set by the script).
+ */
+
+/* ---------- Scroll progress (CSS scroll-driven; absent where unsupported) ---------- */
+.scroll-progress { display: none; }
+@supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+        .scroll-progress {
+            display: block; position: fixed; inset: 0 0 auto; z-index: 60; height: 3px; pointer-events: none;
+            background: linear-gradient(90deg, var(--orange), var(--orange-2) 55%, var(--yellow));
+            transform-origin: 0 50%; transform: scaleX(0);
+            animation: scroll-progress linear both; animation-timeline: scroll(root);
+        }
+        @keyframes scroll-progress { to { transform: scaleX(1); } }
+    }
+}
+
+/* ---------- Hero ---------- */
+.hero-photo { overflow: hidden; }
+.hero-eyebrow::before { display: none; }
+.hero-mark { width: 1.9rem; height: 1.9rem; flex: none; }
+.hero-orbit {
+    position: absolute; z-index: -5; pointer-events: none; color: #fff; opacity: 0.11;
+    width: 34rem; right: -12rem; bottom: -9rem;
+}
+@media (min-width: 1024px) { .hero-orbit { width: 54rem; left: -16rem; right: auto; top: 50%; bottom: auto; margin-top: -27rem; opacity: 0.13; } }
+.mark-line .mk-leaf { fill: none; stroke: currentColor; stroke-width: 3; vector-effect: non-scaling-stroke; }
+.mk-leaf, .mk-spin { transform-box: view-box; transform-origin: 410px 410px; }
+.hw { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.14em; margin-bottom: -0.14em; }
+.hw > span { display: inline-block; }
+
+@media (prefers-reduced-motion: no-preference) {
+    .hero-photo img { animation: hero-settle 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) both, ken-burns 28s ease-in-out 1.6s infinite alternate; }
+    @keyframes ken-burns { from { transform: none; } to { transform: scale(1.09) translate(-1.6%, -1.2%); } }
+    .hw > span { animation: word-up 0.95s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(var(--w) * 75ms + 250ms); }
+    @keyframes word-up { from { transform: translateY(108%); } to { transform: none; } }
+    .hero-in { animation: fade-up 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(var(--d) * 140ms + 800ms); }
+    @keyframes fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    .hero .mk-leaf { animation: leaf-in 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(var(--k) * 130ms + 150ms); }
+    .hero-orbit .mk-leaf { animation-duration: 1.8s; animation-delay: calc(var(--k) * 180ms + 300ms); }
+    @keyframes leaf-in { from { opacity: 0; transform: translateY(-180px) rotate(-30deg) scale(0.8); } to { opacity: 1; transform: none; } }
+    .hero-orbit .mk-spin { animation: orbit 120s linear infinite; }
+    .hero-mark .mk-spin { animation: mark-turn 1.6s cubic-bezier(0.6, 0, 0.2, 1) 1.1s both; }
+    @keyframes orbit { to { transform: rotate(360deg); } }
+    @keyframes mark-turn { from { transform: rotate(-90deg); } to { transform: none; } }
+    .js .hero:not(.is-inview) :is(.hero-photo img, .mk-spin) { animation-play-state: paused; }
+}
+
+/* ---------- Division cards: 3D tilt with parallax and a soft glare (fine pointers only) ---------- */
+.tilt-wrap { perspective: 1000px; }
+.tilt { position: relative; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--ty, 0px)); }
+.tilt-glare { position: absolute; inset: -60%; z-index: 2; pointer-events: none; opacity: 0; background: radial-gradient(circle at center, rgb(255 255 255 / 0.35), rgb(255 255 255 / 0) 38%); transform: translate(var(--gx, 0%), var(--gy, 0%)); }
+@media (prefers-reduced-motion: no-preference) {
+    .tilt { transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease; }
+    .tilt:hover { --ty: -4px; box-shadow: 0 26px 50px -24px rgb(0 20 51 / 0.55); }
+    .tilt.is-tilting { transition-duration: 0.12s, 0.3s; }
+    .tilt-img img { transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .tilt.is-tilting .tilt-img img { transform: translate(var(--px, 0px), var(--py, 0px)) scale(1.07); transition-duration: 0.12s; }
+    .tilt-glare { transition: opacity 0.3s ease; }
+    .tilt.is-tilting .tilt-glare { opacity: 1; }
+}
+
+/* ---------- Brand-logo marquee ---------- */
+.marquee { --gap: 0.875rem; --tile: 7rem; }
+@media (min-width: 768px) { .marquee { --gap: 1rem; --tile: 8.5rem; } }
+.marquee-row { display: flex; gap: var(--gap); overflow: hidden; padding-block: 0.4rem; }
+.marquee-set { display: flex; flex: none; gap: var(--gap); }
+.marquee-set > li { width: var(--tile); flex: none; }
+.marquee-controls { margin-top: 1rem; text-align: center; }
+.marquee [data-when='paused'], .marquee.is-paused [data-when='running'] { display: none; }
+.marquee.is-paused [data-when='paused'] { display: inline; }
+.marquee.is-paused svg[data-when='paused'] { display: block; }
+@media (prefers-reduced-motion: no-preference) {
+    .marquee-row { mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
+    .marquee-set { animation: marquee calc(var(--n) * 3.4s) linear infinite; }
+    .marquee-row[data-dir='right'] .marquee-set { animation-direction: reverse; }
+    @keyframes marquee { to { transform: translateX(calc(-100% - var(--gap))); } }
+    .marquee:hover .marquee-set, .marquee:focus-within .marquee-set, .marquee.is-paused .marquee-set,
+    .js .marquee:not(.is-inview) .marquee-set { animation-play-state: paused; }
+}
+/* Reduced motion: still rows that wrap into a grid; the loop copies are not shown. */
+@media (prefers-reduced-motion: reduce) {
+    .marquee-row { overflow: visible; }
+    .marquee-set { flex: 1; flex-wrap: wrap; justify-content: center; }
+    .marquee-set[data-copy] { display: none; }
+    .marquee-controls { display: none; }
+}
+
+/* ---------- Scrollytelling: four steps, one van ---------- */
+[data-steps] { --step: 4; }
+.route-panel { container-type: inline-size; max-width: 30rem; padding: 1.25rem 1.25rem 1rem; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
+.route-track { position: relative; height: 5.25rem; }
+.route-track::before, .route-fill { content: ''; position: absolute; left: 1.375rem; right: 1.375rem; bottom: 1.25rem; height: 4px; border-radius: 4px; }
+.route-track::before { background: var(--line); }
+.route-fill { margin: 0; background: linear-gradient(90deg, var(--orange), var(--yellow)); transform-origin: 0 50%; transform: scaleX(calc((var(--step) - 1) / 3)); }
+.route-stop { position: absolute; bottom: calc(1.25rem + 2px - 1.375rem); left: calc(var(--s) * (100% - 2.75rem) / 3); display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 999px; border: 2px solid var(--primary); background: var(--primary); color: var(--primary-ink); }
+.js [data-steps] .route-stop:not(.is-done) { background: var(--surface); border-color: var(--line-strong); color: var(--ink-3); }
+.route-van { position: absolute; left: 0; top: -0.25rem; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; color: var(--navy); transform: translateX(calc((var(--step) - 1) * (100cqw - 2.75rem) / 3)); }
+:root[data-theme='dark'] .route-van { color: var(--yellow); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .route-van { color: var(--yellow); } }
+.route-labels { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 0.5rem; font-family: var(--ff-display), sans-serif; font-size: 0.8125rem; font-weight: 600; color: var(--ink-2); }
+.route-labels span:nth-child(2) { text-align: center; transform: translateX(-12%); } .route-labels span:nth-child(3) { text-align: center; transform: translateX(12%); } .route-labels span:last-child { text-align: right; }
+.step-card { position: relative; }
+.js [data-steps] .step-card.is-active { border-color: color-mix(in srgb, var(--orange) 70%, var(--line)); box-shadow: 0 18px 40px -22px rgb(226 104 14 / 0.55); }
+@media (min-width: 1024px) {
+    .steps-list { gap: 1.25rem; padding-bottom: 6rem; }
+    .step-card { min-height: 12.5rem; }
+}
+@media (prefers-reduced-motion: no-preference) {
+    .route-fill { transition: transform 0.9s cubic-bezier(0.6, 0, 0.2, 1); }
+    .route-van { transition: transform 0.9s cubic-bezier(0.6, 0, 0.2, 1); }
+    .route-van svg { animation: van-bob 0.6s ease-in-out infinite alternate; }
+    .js [data-steps]:not(.is-inview) .route-van svg { animation-play-state: paused; }
+    @keyframes van-bob { to { transform: translateY(-2px); } }
+    .route-stop { transition: background-color 0.4s ease 0.4s, border-color 0.4s ease 0.4s, color 0.4s ease 0.4s, transform 0.4s ease 0.4s; }
+    .route-stop.is-done { transform: scale(1.06); }
+    .step-card { transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s ease, box-shadow 0.3s ease; }
+    @media (min-width: 1024px) { .js [data-steps] .step-card.is-active { transform: translateX(-10px); } }
+}
+
+/* ---------- Delivery map ---------- */
+.dmap { display: grid; gap: 2rem; align-items: center; }
+@media (min-width: 1024px) { .dmap { grid-template-columns: 0.85fr 1.15fr; gap: 4rem; } .dmap-panel { order: -1; } }
+.dmap-panel { border-radius: var(--radius); padding: 1.5rem; background: radial-gradient(70% 60% at 30% 25%, color-mix(in srgb, var(--yellow) 16%, transparent), transparent 70%), var(--surface-2); border: 1px solid var(--line); }
+.dmap-figure { position: relative; max-width: 26rem; margin-inline: auto; }
+.dmap-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.dmap-district { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; stroke-linejoin: round; cursor: pointer; outline: none; transition: fill 0.25s ease; }
+.dmap-district:hover, .dmap-district.is-active { fill: color-mix(in srgb, var(--orange) 24%, var(--surface)); }
+.dmap-district:focus-visible { stroke: var(--focus); stroke-width: 5; fill: color-mix(in srgb, var(--orange) 24%, var(--surface)); }
+.dmap-route { fill: none; stroke: var(--orange); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 0; }
+.dmap-stop { fill: var(--surface); stroke: var(--primary); stroke-width: 4; transform-box: fill-box; transform-origin: center; }
+.dmap-van { fill: var(--navy); stroke: #fff; stroke-width: 2; display: none; }
+.dmap-hub-dot { fill: var(--navy); stroke: #fff; stroke-width: 5; }
+.dmap-pulse { fill: var(--orange); opacity: 0; transform-box: fill-box; transform-origin: center; }
+:root[data-theme='dark'] :is(.dmap-van, .dmap-hub-dot) { fill: var(--yellow); stroke: var(--navy); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) :is(.dmap-van, .dmap-hub-dot) { fill: var(--yellow); stroke: var(--navy); } }
+.dmap-hub-label { position: absolute; margin: 0; transform: translate(calc(-100% - 1rem), -50%); padding: 0.2rem 0.6rem; border-radius: 999px; background: var(--navy); color: #fff; font-family: var(--ff-display), sans-serif; font-size: 0.8125rem; font-weight: 600; white-space: nowrap; pointer-events: none; }
+.dmap-card { position: absolute; z-index: 3; left: 50%; top: 50%; width: max-content; max-width: 14rem; padding: 0.6rem 0.85rem; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-md); pointer-events: none; opacity: 0; visibility: hidden; transform: translate(-50%, calc(-100% - 0.5rem)); }
+.dmap-card.is-shown { opacity: 1; visibility: visible; transform: translate(-50%, calc(-100% - 1rem)); }
+.dmap-card-name { margin: 0; font-family: var(--ff-display), sans-serif; font-weight: 600; color: var(--ink); }
+.dmap-card-days { margin: 0.1rem 0 0; font-size: 0.9375rem; color: var(--ink-2); }
+.dmap-list { display: grid; gap: 0 1.5rem; margin: 0; padding: 0; list-style: none; }
+@media (min-width: 640px) { .dmap-list { grid-template-columns: 1fr 1fr; } }
+.dmap-list li { display: block; min-height: 3rem; padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--line); border-radius: 8px; transition: background-color 0.2s ease; }
+.dmap-list li.is-active { background: var(--primary-soft); }
+@media (prefers-reduced-motion: no-preference) {
+    .js .dmap:not(.is-visible) .dmap-route { stroke-dashoffset: 1; }
+    .dmap-route { transition: stroke-dashoffset 1.2s cubic-bezier(0.6, 0, 0.2, 1); transition-delay: calc(var(--i) * 110ms + 350ms); }
+    .js .dmap:not(.is-visible) .dmap-stop { transform: scale(0); }
+    .dmap-stop { transition: transform 0.45s cubic-bezier(0.3, 1.6, 0.5, 1); transition-delay: calc(var(--i) * 110ms + 1250ms); }
+    .dmap-van { display: block; offset-rotate: 0deg; offset-distance: 0%; opacity: 0; animation: van-run 4.2s cubic-bezier(0.5, 0, 0.3, 1) infinite; animation-delay: calc(var(--i) * 0.55s + 2.4s); }
+    @keyframes van-run { 0% { offset-distance: 0%; opacity: 0; } 10% { opacity: 1; } 70% { offset-distance: 100%; opacity: 1; } 85%, 100% { offset-distance: 100%; opacity: 0; } }
+    .dmap-pulse { animation: hub-pulse 2.4s ease-out infinite; }
+    @keyframes hub-pulse { from { opacity: 0.45; transform: scale(0.6); } to { opacity: 0; transform: scale(2.2); } }
+    .js .dmap:not(.is-inview) :is(.dmap-van, .dmap-pulse) { animation-play-state: paused; }
+    .dmap-card { transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0.2s; }
+}
+
+/* ---------- Timeline that draws itself, 1891 → 2025 ---------- */
+.timeline { position: relative; }
+.timeline::before { content: ''; position: absolute; inset: 0 0 auto; height: 3px; border-radius: 3px; background: linear-gradient(90deg, var(--orange), var(--orange-2) 50%, var(--yellow)); transform-origin: 0 50%; }
+@media (prefers-reduced-motion: no-preference) {
+    .js .timeline[data-reveal] { opacity: 1; transform: none; }
+    .timeline::before { transition: transform 1.8s cubic-bezier(0.6, 0, 0.2, 1) 0.2s; }
+    .js .timeline:not(.is-visible)::before { transform: scaleX(0); }
+    .timeline-item { transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); transition-delay: calc(var(--t) * 220ms + 400ms); }
+    .js .timeline:not(.is-visible) .timeline-item { opacity: 0; transform: translateY(14px); }
+}
+
+/* ---------- Navy partner band: a warm spotlight that follows the pointer ---------- */
+.spotlight { position: relative; isolation: isolate; overflow: hidden; }
+.spotlight::before { content: ''; position: absolute; z-index: -1; left: -18rem; top: -18rem; width: 36rem; height: 36rem; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgb(255 189 11 / 0.2), rgb(226 104 14 / 0.1) 38%, rgb(226 104 14 / 0) 66%); opacity: 0; transform: translate(var(--sx, 0px), var(--sy, 0px)); }
+.spotlight.is-lit::before { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) { .spotlight::before { transition: opacity 0.5s ease; } }
+
+/* ---------- Add to order: flying tile, counter bump, toast ---------- */
+.fly-tile { position: fixed; left: 0; top: 0; z-index: 80; width: 4.5rem; height: 4.5rem; border-radius: 14px; overflow: hidden; background: #fff; border: 1px solid var(--line); box-shadow: 0 18px 36px -12px rgb(0 20 51 / 0.45); pointer-events: none; will-change: transform, opacity; }
+.fly-tile img { width: 100%; height: 100%; object-fit: contain; }
+.fly-tile span { display: grid; place-items: center; height: 100%; padding: 0.25rem; font: 600 0.75rem/1.1 var(--ff-display), sans-serif; text-align: center; color: var(--navy); }
+@media (prefers-reduced-motion: no-preference) {
+    .bump { animation: bump 0.55s cubic-bezier(0.3, 1.6, 0.5, 1); }
+    @keyframes bump { 35% { transform: scale(1.12); } }
+    [data-order-count].bump { display: inline-block; animation-name: bump-count; }
+    @keyframes bump-count { 35% { transform: scale(1.45); } }
+}
+.toasts { position: fixed; z-index: 75; left: 1rem; right: 1rem; bottom: 6rem; display: grid; gap: 0.5rem; justify-items: center; pointer-events: none; }
+@media (min-width: 1024px) { .toasts { left: auto; right: 1.5rem; bottom: 1.5rem; justify-items: end; } }
+.toast { pointer-events: auto; display: flex; align-items: center; gap: 0.75rem; width: min(26rem, 100%); padding: 0.85rem 1rem; border-radius: 14px; background: var(--navy); color: #fff; border: 1px solid rgb(255 255 255 / 0.14); box-shadow: 0 22px 44px -18px rgb(0 20 51 / 0.6); font-weight: 600; }
+.toast a { margin-left: auto; display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 0.25rem; color: var(--yellow); white-space: nowrap; text-decoration: underline; text-underline-offset: 3px; }
+.toast a:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; border-radius: 6px; }
+.toast svg { flex: none; color: var(--yellow); }
+@media (prefers-reduced-motion: no-preference) {
+    .toast { animation: toast-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+    .toast.is-leaving { animation: toast-out 0.3s ease both; }
+    @keyframes toast-in { from { opacity: 0; transform: translateY(16px) scale(0.97); } }
+    @keyframes toast-out { to { opacity: 0; transform: translateY(10px); } }
+}
+
+/* ---------- Trade account: animated stepper ---------- */
+.stepper-list { display: grid; gap: 0.25rem; margin: 0; padding: 0; list-style: none; }
+.stepper-list a { display: flex; align-items: center; gap: 0.75rem; min-height: 2.75rem; padding: 0.2rem 0.5rem; border-radius: 10px; color: var(--ink-2); font-weight: 500; }
+.stepper-list a:hover { color: var(--ink); background: var(--surface-2); }
+.stepper-dot { position: relative; display: grid; place-items: center; flex: none; width: 2rem; height: 2rem; border-radius: 999px; border: 2px solid var(--line-strong); background: var(--surface); font-size: 0.875rem; font-weight: 700; color: var(--ink-2); }
+.stepper-dot > * { grid-area: 1 / 1; }
+.stepper-tick { opacity: 0; transform: scale(0.4); }
+.stepper-list a.is-current { color: var(--ink); background: var(--primary-soft); }
+.stepper-list a.is-current .stepper-dot { border-color: var(--primary); color: var(--primary); }
+.stepper-list a.is-done .stepper-dot { border-color: var(--primary); background: var(--primary); color: var(--primary-ink); }
+.stepper-list a.is-done .num { opacity: 0; }
+.stepper-list a.is-done .stepper-tick { opacity: 1; transform: none; }
+.stepper-bar { height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.stepper-bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--orange), var(--yellow)); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); }
+html:not(.js) .stepper-bar { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+    .stepper-dot { transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.3s ease; }
+    .stepper-list a.is-current .stepper-dot { transform: scale(1.1); }
+    .stepper-tick, .stepper-dot .num { transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1); }
+    .stepper-bar span { transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+}
+
+/* ---------- Page-to-page View Transitions (cross-document), and the theme's circular reveal ---------- */
+@media (prefers-reduced-motion: no-preference) {
+    @view-transition { navigation: auto; }
+    .site-head { view-transition-name: site-head; }
+    ::view-transition-old(root) { animation: vt-out 0.22s ease both; }
+    ::view-transition-new(root) { animation: vt-in 0.38s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+    @keyframes vt-out { to { opacity: 0; } }
+    @keyframes vt-in { from { opacity: 0; transform: translateY(14px); } }
+    ::view-transition-group(*) { animation-duration: 0.45s; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+    ::view-transition-group(site-head) { z-index: 10; }
+    /* Theme switch: no element morphs, just the new theme revealed in a circle from the button. */
+    html.vt-theme .site-head, html.vt-theme .case { view-transition-name: none !important; }
+    html.vt-theme::view-transition-old(root), html.vt-theme::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+}

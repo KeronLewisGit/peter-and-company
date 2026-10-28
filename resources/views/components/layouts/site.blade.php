@@ -68,6 +68,7 @@
     @endforeach
 </head>
 <body class="min-h-screen {{ $mobileBar ? 'pb-[5.25rem] lg:pb-0' : '' }}" x-data="{ menu: false }" @keydown.escape.window="menu = false">
+    <div class="scroll-progress" aria-hidden="true"></div>
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface focus:px-4 focus:py-3 focus:shadow-md">Skip to content</a>
 
     @if (peterco('preview'))
@@ -116,10 +117,10 @@
             </nav>
 
             <a href="{{ route('catalogue') }}#cat-q" class="inline-flex h-11 w-11 flex-none items-center justify-center rounded-full text-primary hover:bg-surface-2" aria-label="Search the catalogue"><x-icon name="search" class="h-5 w-5" /></a>
-            <button type="button" onclick="toggleTheme()" class="hidden h-11 w-11 flex-none items-center justify-center rounded-full text-ink-2 hover:bg-surface-2 hover:text-ink sm:inline-flex" aria-label="Switch light or dark theme">
+            <button type="button" onclick="toggleTheme(event)" class="hidden h-11 w-11 flex-none items-center justify-center rounded-full text-ink-2 hover:bg-surface-2 hover:text-ink sm:inline-flex" aria-label="Switch light or dark theme">
                 <x-icon name="moon" class="h-5 w-5 dark-hide" /><x-icon name="sun" class="hidden h-5 w-5 dark-show" />
             </button>
-            <a href="{{ route('order.show') }}" class="btn btn-primary btn-sm ml-1 hidden flex-none whitespace-nowrap lg:inline-flex" @if(request()->routeIs('order.*')) aria-current="page" @endif><x-icon name="list" class="h-4 w-4" />Order list<span class="num rounded-full bg-black/20 px-2 text-sm">{{ $listCount }}</span></a>
+            <a href="{{ route('order.show') }}" data-order-target class="btn btn-primary btn-sm ml-1 hidden flex-none whitespace-nowrap lg:inline-flex" @if(request()->routeIs('order.*')) aria-current="page" @endif><x-icon name="list" class="h-4 w-4" />Order list<span class="num rounded-full bg-black/20 px-2 text-sm" data-order-count>{{ $listCount }}</span></a>
             <button type="button" class="menu-toggle inline-flex h-11 w-11 flex-none items-center justify-center rounded-full text-ink ring-1 ring-line-strong lg:hidden" @click="menu = !menu" :aria-expanded="menu.toString()" aria-controls="mobile-menu" aria-label="Menu">
                 <x-icon name="menu" x-show="!menu" /><x-icon name="x" x-show="menu" x-cloak />
             </button>
@@ -139,17 +140,17 @@
                     @endif
                 @endforeach
                 <div class="mt-5 grid gap-3 sm:grid-cols-2">
-                    <a href="{{ route('order.show') }}" class="btn btn-primary">Order list ({{ $listCount }})</a>
+                    <a href="{{ route('order.show') }}" class="btn btn-primary">Order list (<span data-order-count>{{ $listCount }}</span>)</a>
                     @if ($phone)<a href="{{ tel_href($phone) }}" class="btn btn-outline"><x-icon name="phone" class="h-4 w-4" />{{ format_phone($phone) }}</a>@endif
                 </div>
-                <button type="button" onclick="toggleTheme()" class="mt-3 flex min-h-11 items-center gap-2 rounded px-1 text-left font-semibold text-ink-2"><x-icon name="moon" class="h-5 w-5" />Switch light or dark theme</button>
+                <button type="button" onclick="toggleTheme(event)" class="mt-3 flex min-h-11 items-center gap-2 rounded px-1 text-left font-semibold text-ink-2"><x-icon name="moon" class="h-5 w-5" />Switch light or dark theme</button>
             </nav>
         </div>
     </header>
 
     @if (session('list_status'))
         <div class="border-b border-line bg-primary-soft" role="status">
-            <p class="wrap flex flex-wrap items-center gap-x-4 gap-y-1 py-3 font-semibold text-ink"><span class="inline-flex items-center gap-2"><x-icon name="check-circle" class="h-5 w-5 text-link" />{{ session('list_status') }}</span><a href="{{ route('order.show') }}" class="text-link underline underline-offset-2">View order list ({{ $listCount }})</a></p>
+            <p class="wrap flex flex-wrap items-center gap-x-4 gap-y-1 py-3 font-semibold text-ink"><span class="inline-flex items-center gap-2" data-flash><x-icon name="check-circle" class="h-5 w-5 text-link" />{{ session('list_status') }}</span><a href="{{ route('order.show') }}" class="text-link underline underline-offset-2">View order list ({{ $listCount }})</a></p>
         </div>
     @endif
 
@@ -158,7 +159,7 @@
     </main>
 
     {{-- Acado's navy band, on every page as on acadostlucia.com --}}
-    <section class="band-navy on-dark mt-24" aria-labelledby="partner-title">
+    <section class="band-navy spotlight on-dark mt-24" aria-labelledby="partner-title" data-spotlight>
         <div class="wrap flex flex-col gap-6 py-12 md:flex-row md:items-center md:justify-between md:py-14">
             <div>
                 <h2 id="partner-title" class="text-2xl font-medium leading-snug text-white md:text-[1.75rem]">Looking for an outstanding distribution partner?</h2>
@@ -232,9 +233,11 @@
             <div class="flex gap-2">
                 @if ($phone)<a href="{{ tel_href($phone) }}" class="btn btn-outline flex-1 px-2 text-[0.875rem]"><x-icon name="phone" class="h-4 w-4" />Call</a>@endif
                 <a href="{{ route('catalogue') }}" class="btn btn-outline flex-1 px-2 text-[0.875rem]">Catalogue</a>
-                <a href="{{ route('order.show') }}" class="btn btn-primary flex-[1.3] whitespace-nowrap px-2 text-[0.875rem]">Order list · {{ $listCount }}</a>
+                <a href="{{ route('order.show') }}" data-order-target class="btn btn-primary flex-[1.3] whitespace-nowrap px-2 text-[0.875rem]">Order list · <span data-order-count>{{ $listCount }}</span></a>
             </div>
         </nav>
     @endif
+    {{-- Toasts for "Add to order" (JavaScript only; without it the page reloads with the message above) --}}
+    <div class="toasts" data-toasts role="status" aria-live="polite"></div>
 </body>
 </html>

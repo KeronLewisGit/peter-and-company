@@ -1,6 +1,6 @@
 @props(['step' => 1, 'title' => 'Your details'])
 {{-- Name, phone, email and how to reach you: the same on every form. --}}
-<fieldset class="space-y-5">
+<fieldset {{ $attributes->merge(['class' => 'space-y-5']) }}>
     <legend class="fieldset-title mb-5"><span class="step">{{ $step }}</span>{{ $title }}</legend>
     <x-field name="name" label="Full name" :required="true" autocomplete="name" maxlength="120" />
     <div class="grid gap-5 sm:grid-cols-2">
