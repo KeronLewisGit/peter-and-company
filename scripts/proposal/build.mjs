@@ -1,5 +1,5 @@
 // Builds the client proposal (letter-size PDF) from the captured screenshots, in the site's own
-// kraft, ink and cerulean palette and fonts. Usage: npm run proposal  (capture first; this step only needs Chrome)
+// Acado palette (orange, navy, yellow, grey) and fonts (Montserrat, Figtree). Usage: npm run proposal  (capture first; this step only needs Chrome)
 import puppeteer from 'puppeteer-core';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -10,7 +10,7 @@ const SHOTS = path.resolve('dist/proposal/shots');
 const chunks = JSON.parse(fs.readFileSync(path.join(SHOTS, 'chunks.json'), 'utf8'));
 const OUT_HTML = path.resolve('dist/proposal/proposal.html');
 const OUT_PDF = path.resolve('dist/proposal/Peter-and-Company-Website-Proposal.pdf');
-const MAX_BYTES = 9.5 * 1024 * 1024;
+const MAX_BYTES = 9_500_000;
 const DATE = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 const TITLE = 'Acado St. Lucia (Peter & Company Distribution) – Trade Website Proposal';
 // Counted from the code, so the proposal never quotes a stale number.
@@ -30,33 +30,35 @@ const font = (prefix) => {
   return 'file://' + path.join(ASSETS, f);
 };
 const FONTS = [
-  ['Schibsted', 700, 'schibsted-grotesk-700-normal'], ['Schibsted', 800, 'schibsted-grotesk-800-normal'],
+  ['Montserrat', 300, 'montserrat-300-normal'], ['Montserrat', 600, 'montserrat-600-normal'], ['Montserrat', 700, 'montserrat-700-normal'],
   ['Figtree', 400, 'figtree-400-normal'], ['Figtree', 600, 'figtree-600-normal'], ['Figtree', 700, 'figtree-700-normal'],
 ].map(([fam, w, p]) => `@font-face { font-family: '${fam}'; font-weight: ${w}; font-style: normal; src: url('${font(p)}') format('woff2'); }`).join('\n');
 
 // The company's own logo from acadostlucia.com.
 const LOGO = (white) => `<img class="logo" src="${img(path.resolve(`public/img/brand/acado-st-lucia${white ? '-white' : ''}.png`))}" alt="Acado St. Lucia">`;
-// Rack-tag section label, as on the site.
+// Eyebrow section label with the orange bar, as on the site.
 const tag = (code, label) => `<p class="rack"><i>${esc(code)}</i><span>${esc(label)}</span></p>`;
+const HERO = img(path.resolve('public/img/acado-team-1366.webp'));
 
 /** Hand-written captions per slice (key = screen name, index = slice number). */
 const CAPTIONS = {
   home: [
-    'The hero: what the company distributes and to whom, the two trade actions (browse the catalogue, open a trade account), and the facts it publishes – trading since 1891, four divisions, the brands on its division pages, and the Acado Limited group.',
-    'Quick routes for the five people who visit: a buyer browsing, a buyer ordering, a new trade customer, an overseas brand owner and a job seeker. Then the four divisions with their brand lists.',
-    'Sample catalogue lines drawn as carton ends (shipping marks, the brand stamped on kraft) with a cases box and “Add to order” on every line. No prices anywhere: the trade desk confirms them.',
+    'The familiar Acado look, modernised: the orange top bar, the white header with the uppercase menu, and your own staff photo from the February 2025 rebrand as the hero, with the two trade actions and the facts the company publishes – trading since 1891, four divisions, the brands on its division pages, and the Acado Limited group. Then quick routes for the five people who visit.',
+    'Your “About us” band, in your own words, and the orange “Our portfolio” band with the four divisions and your own division images.',
+    'Sample catalogue lines, each with the brand’s logo tile from your division pages, a cases box and “Add to order”. No prices anywhere: the trade desk confirms them.',
+    'Featured brands: the logo grid from your home page, now linking each brand to its division.',
     'How ordering works in four steps, and the pharmaceutical division, which is clearly for licensed pharmacies, hospitals and clinics only.',
     'History since 1891, then the panels for brand owners and job seekers.',
-    'The call to action for new trade customers, and the footer with the head-office number, address and social links.',
+    'Your navy “Looking for an outstanding distribution partner?” band, on every page, and the orange footer with the white logo, tagline, head-office number, address and social links.',
   ],
-  brands: [`Every division on one page with its blurb, dated facts from The Voice (Hennessy for 35+ years, Carib Brewery exclusive), and the full brand list as text – ${BRANDS} brands read from the company’s own division pages. No brand-owner logos are used.`, 'The remaining divisions, including Pharmaceuticals, marked for licensed buyers only.'],
-  division: ['A division page: the brands, the categories, and the catalogue lines in that division. Brand names are text only.', 'Division page, continued.'],
+  brands: [`Every division on one page with its blurb, dated facts from The Voice (Hennessy for 35+ years, Carib Brewery exclusive), and all ${BRANDS} brands from your division pages as logo tiles, each with the brand name as real text underneath, so buyers and search engines can read it.`, 'Wines, Spirits & Tobacco, continued.', 'Brewery, Beverages & Snacks. Food, Household, Frozen & Personal Care and Pharmaceuticals (marked for licensed buyers only) follow on the same page.'],
+  division: ['A division page: your division image, the brands and categories, and a route to order from that division.', 'The brand logos in the division, with every name as text.', 'The catalogue lines in that division, ready to add to an order list.'],
   catalogue: ['The trade catalogue: filter by division, brand and category or search, and add cases to the order list from any line. Sample listings, unpriced, using only brands the company lists.', 'Catalogue, continued: every line shows its case size and a “Sample listing” badge in the demo.'],
   order: ['The order list after a buyer added three lines: change quantities or remove a line, add items that aren’t in the catalogue, and tick pharmaceuticals only with an approved licensed account.', 'Who is ordering, the trade account number (optional; typed in any format), district, delivery address and a preferred working day. The buyer gets a reference number on screen and by email.'],
   'trade-account': ['The trade account application, step by step: who is applying, the business, trade licence and VAT, and the extra licence details pharmacies and clinics must give.', 'Cash-on-delivery or credit terms with trade references, then the trade licence, VAT certificate and owner ID uploads. They are stored privately and only credit control can open them.', 'Consent, the declaration and send.'],
   principals: ['For brand owners outside St Lucia: what a principal gets, and an enquiry form with categories and an optional presentation upload.', 'Principal enquiry, continued.'],
   careers: ['Vacancies (samples in the demo) and a general application. HR publishes real vacancies from the back office.', 'Each vacancy links to its own page and the application form; HR keeps general applications on file.'],
-  about: ['The company’s history in its own words and the rename to Acado St. Lucia, its published vision and values, a six-date timeline, and its retail stores with their numbers.', 'About, continued.', 'About, continued.'],
+  about: ['Who we are, with the rebrand photo, and the company’s history in its own words, in the grey band as on acadostlucia.com.', 'A six-date timeline from 1891 to the 2025 rename, and your published vision over your own photo.', 'Your five core values on the orange band, as on your site.', 'The five retail stores with your own store photos and their numbers.'],
   contact: ['Head-office phone and address with directions, and an enquiry form routed by topic.', 'Faster routes to the right team: orders, trade accounts, principals and jobs.'],
   login: ['Staff sign-in for the back office. Sign-in is rate-limited, and switched-off accounts cannot sign in.'],
   'sales-dashboard': ['The trade desk’s overview leads with the one number to act on: requests past their response target (two hours for an order). Then order trends, the median time to confirm an order, requested deliveries for the next working days, and the call queue. Demo data.', 'Requests per day, a breakdown by type, the oldest new requests and the delivery days customers asked for.'],
@@ -75,7 +77,7 @@ const CAPTIONS = {
 const SECTIONS = [
   { id: 'public', code: 'A', title: 'The public website', intro: 'A trade-first website for the shops, bars, hotels, restaurants, pharmacies and clinics that buy from Acado St. Lucia, and for the brand owners and job seekers who want to reach it. Every fact on it comes from the company’s own website or a dated news report; the catalogue lines in the demo are samples.', screens: [
     ['home', 'Home page', ['Says in one screen what the company distributes and how a business starts buying.', 'Built from the company’s own facts: 1891, four divisions, the brands on its division pages, the Acado group.']],
-    ['brands', 'Brands by division', ['The brand portfolio as searchable text, replacing logo grids that search engines and buyers cannot read.']],
+    ['brands', 'Brands by division', ['Your logo grids kept, with every brand name added as searchable text that buyers and search engines can read.']],
     ['division', 'A division', ['Each division has its own page with its brands and catalogue lines.']],
     ['catalogue', 'Trade catalogue', ['Filter, search and add cases to an order list, without signing in. No prices or stock levels are shown.']],
     ['order', 'Order request', ['A buyer sends the list with a delivery day; the trade desk confirms prices, availability and the day by phone or WhatsApp.', 'Pharmaceutical items are accepted only from an approved, licensed pharmacy or clinic account.']],
@@ -102,7 +104,7 @@ const SECTIONS = [
 ];
 
 const FEATURES = [
-  ['Public website', ['Phone-first, light and dark themes', 'Brands by division, as text', 'Trade catalogue, no prices', 'Order list and order requests', 'Delivery-day choice', 'Trade account and credit application', 'Principal enquiries', 'Careers with CV upload', 'Sitemap and structured data']],
+  ['Public website', ['Phone-first, light and dark themes', 'Your colours, fonts and photos', 'Brand logos with searchable names', 'Trade catalogue, no prices', 'Order list and order requests', 'Delivery-day choice', 'Trade account and credit application', 'Principal enquiries', 'Careers with CV upload', 'Sitemap and structured data']],
   ['Back office', ['Four roles: admin, trade desk, credit, HR', 'Response targets per request type', 'Order stages and delivery days', 'Credit board and account approval', 'Trade accounts with PC- numbers', 'Catalogue editor', 'Vacancies and applications', 'CSV export']],
   ['Privacy', ['Credit documents: credit control only', 'CVs: HR and administrators only', 'Every document opening logged', 'Files stored outside the web root', 'Bank and card numbers refused']],
   ['Platform', ['Laravel 13 on PHP 8.3', 'Runs on standard shared hosting', 'HTTPS, security headers, spam protection', `${TESTS} automated tests`, 'Packaged installer and written guide']],
@@ -223,71 +225,79 @@ const foot = () => `<footer class="foot"><span>${esc(TITLE)}</span><span>${esc(D
 
 const STYLE = `
   ${FONTS}
-  :root { --bg: #f6f4ef; --kraft: #e9e0cf; --kraft-2: #d9cbb1; --ink: #191a1c; --ink-2: #3f4246; --ink-3: #62666b; --line: #ddd6c8; --primary: #0b6e9f; --sky: #5cc6f2; --sky-soft: #e3f2fa; --stripe: #f26921; --crate: #1d1a16; }
+  :root { --bg: #fff; --grey: #f4f4f4; --ink: #262626; --ink-2: #555; --ink-3: #676767; --line: #e4e4e4; --primary: #b94e00; --orange: #e2680e; --orange-2: #f26921; --yellow: #ffbd0b; --navy: #002766; --navy-2: #003a8c; --soft: #fdf0e6; }
   @page { size: Letter; margin: 0.5in 0.55in 0.5in; }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; font-family: 'Figtree', 'Helvetica Neue', Arial, sans-serif; color: var(--ink); font-size: 10.4pt; line-height: 1.45; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  h1, h2, h3 { font-family: 'Schibsted', 'Helvetica Neue', Arial, sans-serif; font-weight: 800; color: var(--ink); margin: 0; line-height: 1.05; letter-spacing: -0.02em; }
-  h3 { font-weight: 700; }
+  h1, h2, h3 { font-family: 'Montserrat', 'Helvetica Neue', Arial, sans-serif; font-weight: 700; color: var(--ink); margin: 0; line-height: 1.1; letter-spacing: -0.01em; }
+  h1 { color: var(--orange); } h2 { color: var(--navy); } h3 { font-weight: 600; }
   b, strong { font-weight: 700; }
   .page { page-break-after: always; break-after: page; height: 10in; display: flex; flex-direction: column; overflow: hidden; }
   .page:last-child { page-break-after: auto; break-after: auto; }
   .page > * { flex-shrink: 0; }
-  .eyebrow { font-size: 8pt; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--primary); margin: 0 0 4px; }
-  .rack { display: inline-flex; margin: 0 0 10px; font-family: 'Schibsted', sans-serif; font-weight: 700; font-size: 7.6pt; letter-spacing: .14em; text-transform: uppercase; border-radius: 3px; overflow: hidden; box-shadow: inset 0 -3px 0 var(--stripe), 0 0 0 1.5px var(--ink); background: #fff; }
-  .rack i { font-style: normal; background: var(--ink); color: #fff; padding: 5px 7px 7px; font-weight: 800; letter-spacing: .06em; } .rack span { padding: 5px 8px 7px; }
+  .eyebrow { font-family: 'Montserrat', sans-serif; font-size: 7.6pt; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--primary); margin: 0 0 4px; }
+  .rack { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 7.8pt; letter-spacing: .16em; text-transform: uppercase; color: var(--primary); }
+  .rack::before { content: ''; width: 26px; height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--orange), var(--yellow)); }
+  .rack i { font-style: normal; color: var(--ink-3); font-weight: 600; }
   .logo { height: 46px; width: auto; display: block; }
-  /* kraft carton bands: cover and part dividers */
-  .band { background: var(--kraft); background-image: repeating-linear-gradient(0deg, transparent 0 7px, rgba(160,135,95,.14) 7px 8px); border-radius: 6px; padding: 0.6in 0.6in 0.7in; position: relative; border: 2px solid var(--ink); }
-  .band::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: repeating-linear-gradient(90deg, var(--ink) 0 14px, transparent 14px 22px); opacity: .9; }
+  .grad { height: 5px; background: linear-gradient(90deg, var(--orange), var(--orange-2) 55%, var(--yellow)); }
+  /* cover */
   .cover { justify-content: space-between; }
-  .cover h1 { font-size: 38pt; line-height: 1.02; margin: 14px 0 14px; } .cover h1 em { font-style: normal; color: var(--primary); }
-  .cover p.lead { color: var(--ink-2); font-size: 12.5pt; max-width: 5.8in; margin: 0; }
-  .label { background: #fff; border: 2px solid var(--ink); border-radius: 4px; font-family: 'Schibsted', sans-serif; width: 3.2in; box-shadow: 0 8px 20px rgba(0,0,0,.12); }
-  .label .row { display: flex; justify-content: space-between; padding: 5px 9px; border-bottom: 1.5px solid var(--ink); font-size: 7pt; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
-  .label .big { padding: 6px 9px 2px; font-size: 22pt; font-weight: 800; line-height: 1; }
-  .label .bars { height: 30px; margin: 6px 9px 9px; background: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px, var(--ink) 8px 11px, transparent 11px 12px); }
-  .cover .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; border-top: 1.5px solid var(--ink); padding-top: 14px; font-size: 9.3pt; color: var(--ink-2); margin-bottom: 18px; }
-  .cover .meta b { display: block; font-size: 7.6pt; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 4px; color: var(--primary); }
-  .cover .meta .n { color: var(--ink); font-weight: 700; font-size: 10.5pt; }
+  .cover .topbar { background: var(--orange); color: #1a1a1a; font-size: 8.4pt; font-weight: 600; padding: 6px 14px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; }
+  .cover .head { display: flex; justify-content: space-between; align-items: center; padding: 14px 4px 12px; }
+  .cover .head .eyebrow { margin: 0; }
+  .cover .hero { position: relative; height: 3.15in; border-radius: 14px; overflow: hidden; background: #001433; }
+  .cover .hero img { width: 100%; height: 100%; object-fit: cover; object-position: 60% 40%; display: block; }
+  .cover .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,20,51,.55) 0%, rgba(0,20,51,0) 60%); }
+  .cover .hero .grad { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; }
+  .cover h1 { font-size: 30pt; line-height: 1.06; margin: 4px 0 12px; color: var(--navy); } .cover h1 em { font-style: normal; color: var(--orange); }
+  .cover p.lead { color: var(--ink-2); font-size: 11.5pt; max-width: 6.6in; margin: 0; }
+  .cover .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; background: var(--navy); color: rgba(255,255,255,.86); border-radius: 12px; padding: 14px 18px 16px; font-size: 9.3pt; position: relative; overflow: hidden; }
+  .cover .meta::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: linear-gradient(90deg, var(--orange), var(--yellow)); }
+  .cover .meta b { display: block; font-family: 'Montserrat', sans-serif; font-size: 7.4pt; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 4px; color: var(--yellow); font-weight: 600; }
+  .cover .meta .n { color: #fff; font-weight: 700; font-size: 10.5pt; }
+  /* part dividers: Acado's navy band */
+  .band { background: radial-gradient(90% 70% at 100% 100%, rgba(226,104,14,.28) 0%, rgba(226,104,14,0) 60%), linear-gradient(160deg, var(--navy) 0%, #001a45 100%); color: #fff; border-radius: 14px; padding: 0.6in 0.6in 0.7in; position: relative; overflow: hidden; }
+  .band::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: linear-gradient(90deg, var(--orange), var(--orange-2) 55%, var(--yellow)); }
+  .band .rack { color: var(--yellow); } .band .rack i { color: rgba(255,255,255,.75); }
   .divider { justify-content: center; }
-  .divider h1 { font-size: 38pt; margin: 4px 0 16px; } .divider p { color: var(--ink-2); font-size: 12pt; max-width: 6in; margin: 0; }
-  .divider ol { color: var(--ink-2); columns: 2; font-size: 10pt; margin: 22px 0 0; padding-left: 18px; } .divider li { break-inside: avoid; margin: 3px 0; }
+  .divider h1 { font-size: 36pt; margin: 4px 0 16px; color: #fff; font-weight: 300; text-transform: uppercase; letter-spacing: .02em; } .divider p { color: rgba(255,255,255,.88); font-size: 12pt; max-width: 6in; margin: 0; }
+  .divider ol { color: rgba(255,255,255,.86); columns: 2; font-size: 10pt; margin: 22px 0 0; padding-left: 18px; } .divider li { break-inside: avoid; margin: 3px 0; } .divider li::marker { color: var(--yellow); font-weight: 700; }
   /* text pages */
-  .prose h1 { font-size: 26pt; margin-bottom: 10px; }
-  .prose h2 { font-size: 14.5pt; margin: 14px 0 6px; }
+  .prose h1 { font-size: 25pt; margin-bottom: 10px; }
+  .prose h2 { font-size: 14pt; margin: 14px 0 6px; }
   .prose p { margin: 0 0 8px; }
-  .prose ul.list { margin: 0 0 8px; padding-left: 17px; } .prose ul.list li { margin: 2px 0; }
+  .prose ul.list { margin: 0 0 8px; padding-left: 17px; } .prose ul.list li { margin: 2px 0; } .prose li::marker { color: var(--orange); }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .card { border: 1.5px solid var(--ink); border-radius: 5px; padding: 11px 13px; background: #fff; break-inside: avoid; box-shadow: inset 0 3px 0 var(--kraft-2); }
-  .card h3 { font-size: 12pt; margin-bottom: 5px; }
+  .card { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: #fff; break-inside: avoid; box-shadow: inset 0 4px 0 var(--orange), 0 6px 16px -10px rgba(0,20,51,.25); }
+  .card h3 { font-size: 11.5pt; margin-bottom: 5px; color: var(--navy); }
   .card ul { margin: 0; padding-left: 15px; font-size: 9.3pt; } .card li { margin: 1.5px 0; }
-  .evidence { border-left: 4px solid var(--stripe); background: #fbf3ea; border-radius: 0 6px 6px 0; padding: 9px 12px 9px 28px; margin: 8px 0 10px; }
+  .evidence { border-left: 4px solid var(--orange); background: var(--soft); border-radius: 0 10px 10px 0; padding: 9px 12px 9px 28px; margin: 8px 0 10px; }
   .evidence li { margin: 3px 0; }
-  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin: 12px 0; } .stat { background: var(--crate); color: #fff; border-radius: 5px; padding: 11px 12px; } .stat b { display: block; font-family: 'Schibsted', sans-serif; font-weight: 800; font-size: 24pt; line-height: 1; color: #fff; } .stat span { display: block; margin-top: 4px; font-size: 8.4pt; color: rgba(255,255,255,.82); line-height: 1.3; }
-  table.feat { width: 100%; border-collapse: collapse; font-size: 9.4pt; } table.feat td { border-bottom: 1px solid var(--line); padding: 9px 6px; vertical-align: top; } table.feat td:first-child { width: 20%; font-family: 'Schibsted', sans-serif; font-weight: 700; font-size: 12pt; }
-  .pill-row { display: flex; flex-wrap: wrap; gap: 5px; } .pill { border: 1px solid #b9dcee; background: var(--sky-soft); color: #0a4f72; border-radius: 3px; padding: 2px 8px; font-size: 8.6pt; font-weight: 600; }
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin: 12px 0; } .stat { background: var(--navy); color: #fff; border-radius: 12px; padding: 11px 12px 13px; position: relative; overflow: hidden; } .stat::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: linear-gradient(90deg, var(--orange), var(--yellow)); } .stat b { display: block; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 23pt; line-height: 1; color: var(--yellow); } .stat span { display: block; margin-top: 5px; font-size: 8.4pt; color: rgba(255,255,255,.86); line-height: 1.3; }
+  table.feat { width: 100%; border-collapse: collapse; font-size: 9.4pt; } table.feat td { border-bottom: 1px solid var(--line); padding: 9px 6px; vertical-align: top; } table.feat td:first-child { width: 20%; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 11pt; color: var(--navy); }
+  .pill-row { display: flex; flex-wrap: wrap; gap: 5px; } .pill { border: 1px solid #f3c9a6; background: var(--soft); color: #9a4100; border-radius: 999px; padding: 2px 9px; font-size: 8.6pt; font-weight: 600; }
   table.terms { width: 100%; border-collapse: collapse; font-size: 9.4pt; margin: 4px 0 8px; } table.terms th, table.terms td { text-align: left; vertical-align: top; padding: 4px 8px; border-bottom: 1px solid var(--line); } table.terms th { width: 31%; font-weight: 700; }
-  table.terms thead th { font-size: 8pt; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); border-bottom: 1.5px solid var(--ink); }
+  table.terms thead th { font-family: 'Montserrat', sans-serif; font-size: 7.6pt; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); border-bottom: 2px solid var(--orange); }
   .price { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; align-items: stretch; margin: 6px 0 10px; }
-  .price .big { background: var(--crate); color: #fff; border-radius: 6px; padding: 14px 16px; } .price .big b.amt { font-family: 'Schibsted', sans-serif; font-weight: 800; font-size: 27pt; line-height: 1; display: block; margin-bottom: 6px; } .price .big span { color: rgba(255,255,255,.86); font-size: 9.6pt; }
-  .price .year { border: 2px solid var(--ink); border-radius: 6px; padding: 12px 14px; background: #fff; box-shadow: inset 0 -4px 0 var(--stripe); } .price .year p { margin: 0 0 4px; } .price .year .k { font-size: 7.8pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--primary); } .price .year .v { font-family: 'Schibsted', sans-serif; font-weight: 800; font-size: 15pt; line-height: 1.15; }
+  .price .big { background: var(--navy); color: #fff; border-radius: 12px; padding: 14px 16px; position: relative; overflow: hidden; } .price .big::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: linear-gradient(90deg, var(--orange), var(--yellow)); } .price .big b.amt { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 26pt; line-height: 1; display: block; margin-bottom: 6px; color: #fff; } .price .big span { color: rgba(255,255,255,.88); font-size: 9.6pt; }
+  .price .year { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--grey); box-shadow: inset 0 -4px 0 var(--orange); } .price .year p { margin: 0 0 4px; } .price .year .k { font-family: 'Montserrat', sans-serif; font-size: 7.4pt; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--primary); } .price .year .v { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 14.5pt; line-height: 1.15; color: var(--navy); }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .two ul { margin: 0; padding-left: 16px; font-size: 9.4pt; } .two li { margin: 2.5px 0; }
-  .weeks { list-style: none; margin: 6px 0 10px; padding: 0; } .weeks li { display: grid; grid-template-columns: 0.9in 1fr; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); } .weeks b { font-family: 'Schibsted', sans-serif; font-weight: 800; font-size: 12.5pt; }
-  .next li { margin: 5px 0; }
-  .contact { margin-top: 14px; background: var(--kraft); border: 2px solid var(--ink); border-radius: 6px; padding: 14px 16px; box-shadow: inset 0 -4px 0 var(--stripe); } .contact p { margin: 2px 0; } .contact a { color: var(--primary); }
+  .weeks { list-style: none; margin: 6px 0 10px; padding: 0; } .weeks li { display: grid; grid-template-columns: 0.9in 1fr; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); } .weeks b { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 12pt; color: var(--orange); }
+  .next li { margin: 5px 0; } .next li::marker { color: var(--orange); font-weight: 700; }
+  .contact { margin-top: 14px; background: var(--grey); border-radius: 12px; padding: 14px 16px; border-left: 5px solid var(--orange); } .contact p { margin: 2px 0; } .contact a { color: var(--primary); }
   /* screenshot pages */
-  .shot-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; border-bottom: 2px solid var(--ink); padding-bottom: 6px; margin-bottom: 7px; }
-  .shot-head h2 { font-size: 18pt; } .url { font-family: Menlo, Consolas, monospace; font-size: 8pt; color: var(--ink-3); margin: 0; white-space: nowrap; }
-  .bullets { margin: 0 0 7px; padding-left: 16px; font-size: 9.3pt; } .bullets li { margin: 1px 0; }
+  .shot-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; padding-bottom: 7px; margin-bottom: 8px; border-bottom: 3px solid; border-image: linear-gradient(90deg, var(--orange), var(--orange-2) 55%, var(--yellow)) 1; }
+  .shot-head h2 { font-size: 17pt; } .url { font-family: Menlo, Consolas, monospace; font-size: 8pt; color: var(--ink-3); margin: 0; white-space: nowrap; }
+  .bullets { margin: 0 0 7px; padding-left: 16px; font-size: 9.3pt; } .bullets li { margin: 1px 0; } .bullets li::marker { color: var(--orange); }
   figure { margin: 0; display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; }
-  figure img { display: block; max-width: 100%; min-height: 0; flex: 0 1 auto; object-fit: contain; object-position: left top; border: 1px solid var(--line); border-radius: 4px; align-self: flex-start; }
+  figure img { display: block; max-width: 100%; min-height: 0; flex: 0 1 auto; object-fit: contain; object-position: left top; border: 1px solid var(--line); border-radius: 8px; align-self: flex-start; }
   .item { display: flex; flex-direction: column; flex: none; } .item + .item { margin-top: 16px; } .item figure { flex: none; } .item figure img { max-width: none; max-height: none; flex: none; }
-  .sub-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 4px; margin-bottom: 6px; } .sub-head h3 { font-size: 13.5pt; }
-  .cap { margin: 6px 0 0; font-size: 8.9pt; line-height: 1.38; color: var(--ink-2); border-left: 3px solid var(--stripe); padding-left: 8px; flex: none; }
-  .phones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 14px 0.15in 0; } .phones figure { display: block; } .phones img { display: block; width: 100%; height: auto; border-radius: 16px; border: 6px solid var(--crate); } .phones figcaption { text-align: center; font-size: 9pt; color: var(--ink-3); margin-top: 6px; }
-  footer.foot { margin-top: auto; padding-top: 8px; font-size: 7.8pt; color: #8a8d91; display: flex; justify-content: space-between; flex: none; }
+  .sub-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 4px; margin-bottom: 6px; } .sub-head h3 { font-size: 12.5pt; color: var(--navy); }
+  .cap { margin: 6px 0 0; font-size: 8.9pt; line-height: 1.38; color: var(--ink-2); border-left: 3px solid var(--orange); padding-left: 8px; flex: none; }
+  .phones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 14px 0.15in 0; } .phones figure { display: block; } .phones img { display: block; width: 100%; height: auto; border-radius: 18px; border: 6px solid var(--navy); } .phones figcaption { text-align: center; font-size: 9pt; color: var(--ink-3); margin-top: 6px; }
+  footer.foot { margin-top: auto; padding-top: 8px; font-size: 7.8pt; color: var(--ink-3); display: flex; justify-content: space-between; flex: none; }
 `;
 
 const browser = await puppeteer.launch({ executablePath: CHROME, headless: 'new', args: ['--no-sandbox', '--allow-file-access-from-files'] });
@@ -298,15 +308,16 @@ const screenCount = SECTIONS.reduce((t, s) => t + s.screens.length, 0) + PHONES.
 const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(TITLE)}</title>
 <style>${STYLE}</style></head><body>
 
-<section class="page band cover">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px">
-    ${LOGO(false)}
-    <div class="label"><div class="row"><span>Ship from</span><span>Port of Spain · TT</span></div><div class="big">Proposal</div><div class="row" style="border-bottom:0"><span>To</span><span>Cul De Sac · LC</span></div><div class="bars"></div></div>
+<section class="page cover">
+  <div>
+    <div class="topbar"><span>Formerly Peter &amp; Company Distribution · Cul De Sac, Castries</span><span>Website proposal</span></div>
+    <div class="head">${LOGO(false)}<p class="eyebrow">${esc(DATE)}</p></div>
+    <div class="hero"><img src="${HERO}" alt="Acado St. Lucia staff at the unveiling of the new Acado sign"><div class="grad"></div></div>
   </div>
   <div>
-    ${tag('00', `Website proposal · ${DATE}`)}
+    ${tag('00', 'Website proposal')}
     <h1>A trade website that <em>takes orders</em>, opens accounts and hires, for Acado St. Lucia</h1>
-    <p class="lead">A new acadostlucia.com for the shops, bars, hotels, pharmacies and clinics that buy from you: a brand portfolio and trade catalogue, order requests, trade account and credit applications with private document upload, principal enquiries, careers, and a back office for the trade desk, credit control and HR – for US$1,000 a month, with no charge for design and development.</p>
+    <p class="lead">A new acadostlucia.com in your own colours, for the shops, bars, hotels, pharmacies and clinics that buy from you: a brand portfolio and trade catalogue, order requests, trade account and credit applications with private document upload, principal enquiries, careers, and a back office for the trade desk, credit control and HR – for US$1,000 a month, with no charge for design and development.</p>
   </div>
   <div class="meta">
     <div><b>Prepared for</b><span class="n">Acado St. Lucia Limited</span><br>formerly Peter &amp; Company Distribution<br>Cul De Sac, P.O. Box 84-85, Castries, Saint Lucia</div>
@@ -319,7 +330,7 @@ const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>
   <h1>Why rebuild now</h1>
   <p>Peter &amp; Company has traded in Castries since 1891, and as Acado St. Lucia it describes itself as one of the island’s largest distributors of consumer products: wines and spirits, Carib and the Brewery range, food, household and personal care, and pharmaceuticals, from Cul De Sac to supermarkets, minimarts, bars, hotels and pharmacies island-wide. The website does not yet do any of that work. When we checked acadostlucia.com on 26 October 2026:</p>
   <ul class="list evidence">
-    <li>The brand portfolio is shown as <b>logo grids</b> on four division pages – images that buyers cannot search and search engines cannot read.</li>
+    <li>The brand portfolio is shown as <b>logo grids</b> on four division pages – images with no brand names that buyers can search or search engines can read.</li>
     <li>There is <b>no catalogue, no price list request and no way to send an order</b>. A buyer still has to phone or wait for a rep.</li>
     <li>There is <b>no trade account or credit application</b>. Licences, VAT certificates and IDs travel on paper or by email attachment.</li>
     <li>The contact page has the head-office number and a general contact form, but <b>no email address</b>. The careers page has a short form with <b>no CV upload and no vacancies</b>, and brand owners looking for a distributor have only the general contact form.</li>
@@ -327,7 +338,7 @@ const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>
   <p>This proposal turns the website into a working trade channel. A buyer finds a line, adds cases to an order list and sends it with a delivery day; the trade desk confirms prices and availability by phone. A new customer applies for cash-on-delivery or credit terms and uploads their documents, which only credit control can open. Brand owners and job seekers each have a proper front door. A complete working demo has been built from the company’s own published information and can be shown live.</p>
   <div class="stat-grid">
     <div class="stat"><b>${screenCount}</b><span>screens in this proposal, all from the working demo</span></div>
-    <div class="stat"><b>${BRANDS}</b><span>brands, read from your own division pages, as text</span></div>
+    <div class="stat"><b>${BRANDS}</b><span>brands from your own division pages, logos with names as text</span></div>
     <div class="stat"><b>4</b><span>staff roles: admin, trade desk, credit, HR</span></div>
     <div class="stat"><b>${TESTS}</b><span>automated tests, run on every change</span></div>
   </div>
@@ -346,11 +357,11 @@ const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>
     ${FEATURES.map(([a, f]) => `<tr><td>${esc(a)}</td><td><div class="pill-row">${f.map((x) => `<span class="pill">${esc(x)}</span>`).join('')}</div></td></tr>`).join('')}
   </tbody></table>
   <h2>How an order reaches the truck</h2>
-  <p>A buyer adds cases from the catalogue (or types items that are not listed), quotes their trade account number if they have one, and chooses a working day. The trade desk is alerted at once; the overview shows any order still waiting after two hours. The desk calls or messages the buyer to confirm prices, stock and the day, then moves the request through Confirmed, Out for delivery and Delivered. Nothing is charged online and nothing ships until the buyer confirms.</p>
+  <p>A buyer adds cases from the catalogue (or types items that are not listed), quotes their trade account number if they have one, and chooses a working day. The trade desk is alerted at once; the overview shows any order still waiting after two hours. The desk calls or messages the buyer to confirm prices, stock and the day, then moves the request through Confirmed, Out for delivery and Delivered. Nothing is charged online.</p>
   <h2>Pharmaceuticals stay business-to-business</h2>
   <p>The pharmaceutical range is never listed publicly. Pharmaceutical orders are accepted only from an approved pharmacy or clinic account with its licence on file, and there is no sale of medicines to the public anywhere on the site.</p>
   <h2>Content and data in the demo</h2>
-  <p>Company facts come from acadostlucia.com (home, who we are, the four division pages, contact) and from The Voice St Lucia (the February 2025 rename, the Carib Brewery and El Dorado agencies, the Hennessy relationship, the 2020 Diquez award). The logo is the company’s own; the photographs are credited Wikimedia Commons images to be replaced with your warehouse, fleet and team. <b>Catalogue lines, vacancies, accounts and requests in the screenshots are demo records</b>, marked as samples, and no prices, stock levels, staff names or figures are invented.</p>
+  <p>Facts come from acadostlucia.com and The Voice St Lucia (the 2025 rename, the Carib Brewery and El Dorado agencies, Hennessy, the 2020 Diquez award). The design follows acadostlucia.com’s colours and layout; the logo, photos and brand-logo tiles are your own from acadostlucia.com (to be confirmed with you), and the few port and landscape photos are credited Wikimedia Commons images. <b>Catalogue lines, vacancies, accounts and requests in the screenshots are demo records</b>, marked as samples, and no prices, stock levels, staff names or figures are invented.</p>
   ${foot()}
 </section>
 
@@ -444,7 +455,8 @@ ${PHONES.map((row, i) => `
   <h2>What we need from Acado St. Lucia</h2>
   <ul class="list">
     <li>The logo as a vector file, and any Acado Limited brand guidelines the site should follow.</li>
-    <li>Photos of the warehouse, fleet and team, or time for a short photo session at Cul De Sac.</li>
+    <li>Photos of the warehouse, fleet and team, or time for a short photo session at Cul De Sac, and the full-size originals of the photos on acadostlucia.com.</li>
+    <li>Confirmation that the brand logos from your division pages may be shown on the new site.</li>
     <li>The product list (brand, product, case size, code) you are happy to publish, without prices, and confirmation of the brands you carry.</li>
     <li>Credit control’s account rules and document list, and the pharmacy licensing checks you apply.</li>
     <li>The staff who need accounts and their roles, and the inboxes for orders, credit, HR and brand enquiries.</li>
@@ -466,7 +478,7 @@ ${PHONES.map((row, i) => `
   </ol>
   <div class="contact" style="max-width:4.8in">
     <p class="eyebrow">Contact</p>
-    <p style="font-family:'Schibsted',sans-serif;font-weight:800;font-size:16pt">Keron Lewis</p>
+    <p style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:16pt">Keron Lewis</p>
     <p>Director, Code Canvas Consultants Ltd · Port of Spain, Trinidad and Tobago</p>
     <p>codecanvastt.com · +1 868 466-CODE · <a href="mailto:info@codecanvastt.com">info@codecanvastt.com</a><br>Book a call: <a href="https://calendly.com/keronlewis/30min">calendly.com/keronlewis/30min</a></p>
   </div>
@@ -482,8 +494,8 @@ await page.evaluate(() => document.fonts.ready);
 await page.pdf({ path: OUT_PDF, format: 'Letter', printBackground: true, preferCSSPageSize: true, displayHeaderFooter: false });
 await browser.close();
 const size = fs.statSync(OUT_PDF).size;
-console.log('PDF written:', OUT_PDF, Math.round(size / 1024 / 1024 * 10) / 10 + ' MB');
+console.log('PDF written:', OUT_PDF, size + ' bytes');
 if (size > MAX_BYTES) {
-  console.error(`The PDF is over ${MAX_BYTES / 1024 / 1024} MB: lower the JPEG quality in capture.mjs.`);
+  console.error(`The PDF is ${size} bytes, over ${MAX_BYTES}: lower the JPEG quality in capture.mjs.`);
   process.exit(1);
 }

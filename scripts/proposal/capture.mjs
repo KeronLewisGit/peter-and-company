@@ -43,7 +43,7 @@ const SCREENS = [
   ['admin-staff', '/admin/users', 'admin'],
 ];
 // Long lists are cut after this many slices: the first screens show the idea.
-const MAX_SLICES = { catalogue: 2, 'sales-inbox': 1, 'credit-accounts': 1, 'sales-products': 1 };
+const MAX_SLICES = { brands: 3, catalogue: 2, 'sales-inbox': 1, 'credit-accounts': 1, 'sales-products': 1 };
 const MOBILE = [
   ['m-home', '/'], ['m-catalogue', '/catalogue', 'guest-list'], ['m-order', '/order', 'guest-list'],
   ['m-trade-account', '/trade-account'], ['m-sales-dashboard', '/admin', 'sales'], ['m-sales-order', `/admin/leads/${ORDER_ID}`, 'sales'],
@@ -121,7 +121,7 @@ async function measureBlocks(page, maxH) {
     const roots = adminMain
       ? [...adminMain.children].map((el) => ({ el, trailing: false }))
       : [...document.body.children].filter((el) => ['HEADER', 'MAIN', 'FOOTER', 'DIV', 'SECTION'].includes(el.tagName) && !skip(el) && visible(el))
-          .flatMap((el) => el.tagName === 'MAIN' ? [...el.children].map((k) => ({ el: k, trailing: false })) : [{ el, trailing: el.tagName === 'FOOTER' }]);
+          .flatMap((el) => el.tagName === 'MAIN' ? [...el.children].map((k) => ({ el: k, trailing: false })) : [{ el, trailing: el.matches('footer, [aria-labelledby="partner-title"]') }]);
     const blocks = roots.filter((r) => visible(r.el)).flatMap((r) => explode(r.el).map((b) => ({ ...b, trailing: r.trailing }))).filter((b) => b.bottom > b.top).sort((a, b) => a.top - b.top);
     const merged = [];
     for (const b of blocks) {
@@ -165,13 +165,13 @@ async function shoot(name, url, account, { width = 1440, height = 900, mobile = 
   await settle(page);
   if (mobile) {
     const file = path.join(OUT, `${name}.jpg`);
-    await page.screenshot({ path: file, type: 'jpeg', quality: 76 });
+    await page.screenshot({ path: file, type: 'jpeg', quality: 66 });
     console.log(`✓ ${name} (phone)`);
     return { name, url, chunks: [file], labels: [[]], mobile };
   }
   const maxH = Math.round(width * RATIO);
   let { blocks, docH } = await measureBlocks(page, maxH);
-  if (name !== 'home') { blocks = blocks.filter((b) => !b.trailing); docH = blocks[blocks.length - 1].bottom; } // the footer is shown once (home)
+  if (name !== 'home') { blocks = blocks.filter((b) => !b.trailing); docH = blocks[blocks.length - 1].bottom; } // the partner band and footer are shown once (home)
   const groups = packBlocks(blocks, maxH, docH).slice(0, MAX_SLICES[name] ?? 99);
   // The back-office sidebar is position: fixed, so it only covers one viewport: stretch the viewport to the page.
   if (await page.$('body.admin')) {
@@ -181,7 +181,7 @@ async function shoot(name, url, account, { width = 1440, height = 900, mobile = 
   const files = []; const labels = [];
   for (const [i, g] of groups.entries()) {
     const file = path.join(OUT, groups.length > 1 ? `${name}-${i}.jpg` : `${name}.jpg`);
-    await page.screenshot({ path: file, type: 'jpeg', quality: 74, captureBeyondViewport: true, clip: { x: 0, y: g.top, width, height: g.bottom - g.top } });
+    await page.screenshot({ path: file, type: 'jpeg', quality: 62, captureBeyondViewport: true, clip: { x: 0, y: g.top, width, height: g.bottom - g.top } });
     files.push(file); labels.push(g.labels ?? []);
   }
   console.log(`✓ ${name} → ${groups.length} slice(s): ${groups.map((g) => (g.labels ?? []).join(' | ') || '(no heading)').join('  ·  ')}`);
