@@ -8,12 +8,12 @@
     };
 @endphp
 <x-layouts.site title="Thank you" :mobile-bar="false">
-    <x-page-hero title="Thank you. We have it." :lead="$next" code="OK" :label="$type->label()" photo="pitons" alt="" :label-code="$reference" label-line="Received" />
+    <x-page-hero title="Thank you. We have it." :lead="$next" :label="$type->label()" photo="pitons" alt="" />
     <section class="wrap mt-12 md:mt-16">
-        <div class="pallet-label max-w-md" role="group" aria-label="Your reference">
-            <div class="row"><span>Your reference</span><span>{{ $type->label() }}</span></div>
-            <p class="big !text-3xl sm:!text-4xl">{{ $reference }}</p>
-            <div class="barcode" aria-hidden="true"></div>
+        <div class="carton relative max-w-md overflow-hidden p-6" role="group" aria-label="Your reference">
+            <span class="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,var(--orange),var(--yellow))]" aria-hidden="true"></span>
+            <p class="kicker text-ink-3">Your reference · {{ $type->label() }}</p>
+            <p class="font-display num mt-2 text-3xl font-semibold text-title sm:text-4xl">{{ $reference }}</p>
         </div>
         <p class="measure mt-6 text-ink-2">We've emailed it to you too. Quote it if you call, and we'll find your request straight away.</p>
         <div class="mt-8 flex flex-wrap gap-3">

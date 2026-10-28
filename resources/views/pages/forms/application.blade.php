@@ -1,6 +1,6 @@
 @php($kept = \App\Support\UploadStash::for('application')->names())
 <x-layouts.site :title="$vacancy ? 'Apply: '.$vacancy->title : 'Send your CV'" description="Apply for a job at Acado St. Lucia. Attach your CV; only HR can open it.">
-    <x-page-hero :title="$vacancy ? 'Apply: '.$vacancy->title : 'Send your CV'" :lead="$vacancy ? $vacancy->summary : 'A general application for warehouse, delivery, merchandising, sales or office work. HR keeps it on file for twelve months.'" code="H-03" label="Application" photo="warehouse-racking" alt="" label-code="CV" label-line="HR only">
+    <x-page-hero :title="$vacancy ? 'Apply: '.$vacancy->title : 'Send your CV'" :lead="$vacancy ? $vacancy->summary : 'A general application for warehouse, delivery, merchandising, sales or office work. HR keeps it on file for twelve months.'" label="Application" photo="acado-careers-tablet" position="center 25%" alt="">
         <nav class="mt-6 text-sm text-ink-3" aria-label="Breadcrumb"><a href="{{ route('careers.index') }}" class="inline-flex min-h-11 items-center text-link underline underline-offset-2">Careers</a> / Apply</nav>
     </x-page-hero>
     <section class="wrap mt-12 md:mt-16">

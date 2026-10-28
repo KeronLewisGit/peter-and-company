@@ -1,5 +1,5 @@
 <x-layouts.site title="Site map" description="Every page on the Acado St. Lucia website.">
-    <x-page-hero title="Site map" lead="Every page on this website." code="L-03" label="All pages" photo="castries-harbour" alt="" label-code="MAP" label-line="All pages" />
+    <x-page-hero title="Site map" lead="Every page on this website." label="All pages" photo="castries-harbour" alt="" />
     <section class="wrap mt-12 grid gap-10 md:mt-16 md:grid-cols-2 lg:grid-cols-4">
         @foreach ([
             'Trade' => ['Trade catalogue' => route('catalogue'), 'Order list' => route('order.show'), 'Open a trade account' => route('account.create'), 'Brand owners and principals' => route('principals')],

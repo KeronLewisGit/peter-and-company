@@ -1,44 +1,52 @@
 @php
     $divisions = (array) peterco('divisions');
     $brandCount = collect($divisions)->sum(fn (array $d) => count($d['brands']));
-    $phone = peterco('phone');
+    $divisionOf = fn (string $brand) => collect($divisions)->search(fn (array $d) => in_array($brand, $d['brands'], true)) ?: 'wines-spirits';
 @endphp
 <x-layouts.site>
-    {{-- Home hero: a kraft band with the headline, a manifest of sourced facts and a stacked pair of photos --}}
-    <section class="kraft relative" data-hero="home">
-        <div class="wrap grid gap-10 pb-14 pt-10 md:pt-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-14 lg:pb-20">
-            <div class="min-w-0">
-                <x-rack-tag code="A-00" label="Formerly Peter & Company Distribution" />
-                <h1 class="display-1 mt-6">St Lucia's shelves, <span class="text-link">stocked</span> from Cul De Sac.</h1>
-                <p class="lead mt-6 text-ink-2">Acado St. Lucia distributes wines and spirits, beer and beverages, food, household and personal care, and pharmaceuticals to the island's supermarkets, minimarts, bars, hotels and pharmacies.</p>
+    {{-- Hero: the company's own photo (staff at the Acado St. Lucia launch) under a navy scrim, with the trade actions --}}
+    <section class="relative isolate overflow-hidden bg-navy-950 text-white on-dark" data-hero="home">
+        {{-- Phones: the photo on top, fading into navy under the text. Desktop: full-bleed under a scrim. --}}
+        <div class="hero-photo relative aspect-[4/3] sm:aspect-[16/9] lg:absolute lg:inset-0 lg:-z-10 lg:aspect-auto">
+            <x-photo key="acado-team" alt="Acado St. Lucia staff gathered at the unveiling of the new Acado sign in February 2025" :eager="true" sizes="100vw" class="h-full w-full !bg-navy-950" position="60% 40%" />
+            <div class="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-navy-950 to-transparent lg:hidden" aria-hidden="true"></div>
+        </div>
+        <div class="hero-scrim absolute inset-0 -z-10 hidden lg:block" aria-hidden="true"></div>
+        <div class="wrap relative -mt-10 pb-24 sm:-mt-16 lg:mt-0 lg:flex lg:min-h-[44rem] lg:items-center lg:pb-32 lg:pt-20">
+            <div class="max-w-2xl">
+                <x-rack-tag label="Formerly Peter & Company Distribution" />
+                <h1 class="display-1 mt-5 text-white">St Lucia's shelves, stocked from Cul De Sac.</h1>
+                <p class="lead mt-5 text-white/90">Acado St. Lucia distributes wines and spirits, beer and beverages, food, household and personal care, and pharmaceuticals to the island's supermarkets, minimarts, bars, hotels and pharmacies.</p>
                 <div class="mt-8 flex flex-wrap gap-3">
                     <a href="{{ route('catalogue') }}" class="btn btn-primary">Browse the trade catalogue<x-icon name="arrow-right" class="nudge h-4 w-4" /></a>
-                    <a href="{{ route('account.create') }}" class="btn btn-outline">Open a trade account</a>
+                    <a href="{{ route('account.create') }}" class="btn btn-on-dark">Open a trade account</a>
                 </div>
-                <dl class="facts mt-10 max-w-xl border-t-2 border-ink text-[0.9375rem]">
-                    <div><dt>Trading since</dt><dd class="num">1891, as Peter &amp; Company</dd></div>
-                    <div><dt>Divisions</dt><dd>{{ count($divisions) }}: {{ collect($divisions)->pluck('short')->join(', ', ' and ') }}</dd></div>
-                    <div><dt>Brands on our division pages</dt><dd class="num">{{ $brandCount }}, including Carib, El Dorado and Hennessy</dd></div>
-                    <div><dt>Part of</dt><dd>Acado Limited, the Agostini's and Goddard Enterprises joint venture</dd></div>
-                </dl>
-            </div>
-            <div class="relative mx-auto w-full max-w-xl pb-6 pr-4 lg:max-w-none">
-                <div class="hero-photo framed photo aspect-[4/3]">
-                    <x-photo key="castries-city-port" alt="Castries, the harbour and the container port, seen from the hills" :eager="true" sizes="(min-width: 1024px) 45vw, 100vw" class="h-full w-full" />
-                </div>
-                <div class="framed photo absolute -bottom-2 right-0 hidden aspect-[4/3] w-[42%] sm:block">
-                    <x-photo key="warehouse-racking" alt="" sizes="20vw" class="h-full w-full" />
-                </div>
-                <x-pallet-label code="PC-1891" line="Castries · Saint Lucia" class="absolute -left-2 top-5 hidden w-52 -rotate-2 sm:block lg:-left-10" />
             </div>
         </div>
-        <div class="flutes absolute inset-x-0 -bottom-[10px]" aria-hidden="true"></div>
+        <div class="gradient-rule absolute inset-x-0 bottom-0" aria-hidden="true"></div>
+    </section>
+
+    {{-- Sourced facts, on a card that overlaps the hero --}}
+    <section class="wrap relative z-10 -mt-12" aria-label="The company in figures">
+        <dl class="grid gap-px overflow-hidden rounded-[var(--radius)] border border-line bg-line shadow-lg sm:grid-cols-2 lg:grid-cols-4">
+            @foreach ([
+                ['Trading since', '1891', 'as Peter &amp; Company'],
+                ['Divisions', (string) count($divisions), collect($divisions)->pluck('short')->map(fn ($s) => e($s))->join(', ', ' and ')],
+                ['Brands', (string) $brandCount, 'on our division pages, including Carib, El Dorado and Hennessy'],
+                ['Part of', 'Acado', 'Limited, the Agostini\'s and Goddard Enterprises joint venture'],
+            ] as [$dt, $big, $small])
+                <div class="bg-surface p-5 lg:p-6">
+                    <dt class="kicker text-ink-3">{{ $dt }}</dt>
+                    <dd class="mt-1"><span class="font-display num text-3xl font-semibold text-title">{{ $big }}</span> <span class="text-[0.9375rem] text-ink-2">{!! $small !!}</span></dd>
+                </div>
+            @endforeach
+        </dl>
     </section>
 
     {{-- "I'd like to…": every trade action, one tap away --}}
     <section class="wrap mt-16 md:mt-20" aria-labelledby="todo-title">
         <h2 id="todo-title" class="kicker text-ink-3">I'd like to…</h2>
-        <ul class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <ul class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             @foreach ([
                 ['catalogue', 'Browse the catalogue', 'Every line we stock, by brand and division. No login needed.', 'list'],
                 ['order.show', 'Request an order', 'Build a list and send it. The trade desk confirms price and delivery.', 'crate'],
@@ -46,71 +54,99 @@
                 ['principals', 'Distribute my brand', 'Overseas brand owners looking for St Lucia distribution.', 'globe'],
                 ['careers.index', 'Find a job', 'Warehouse, delivery, merchandising and sales roles.', 'briefcase'],
             ] as [$route, $label, $text, $icon])
-                <li class="card-link carton p-5 pt-6 transition hover:-translate-y-0.5 hover:shadow-md">
-                    <x-icon :name="$icon" class="h-6 w-6 text-link" />
-                    <h3 class="mt-3 text-lg font-bold leading-snug"><a href="{{ route($route) }}" class="stretch">{{ $label }}</a></h3>
+                <li class="card-link carton lift p-5">
+                    <span class="grid h-11 w-11 place-items-center rounded-full bg-primary-soft text-primary"><x-icon :name="$icon" class="h-5 w-5" /></span>
+                    <h3 class="mt-4 text-lg font-semibold leading-snug"><a href="{{ route($route) }}" class="stretch">{{ $label }}</a></h3>
                     <p class="mt-1 text-[0.9375rem] text-ink-2">{{ $text }}</p>
                 </li>
             @endforeach
         </ul>
     </section>
 
-    {{-- The four divisions --}}
-    <section class="wrap mt-20 md:mt-28" aria-labelledby="div-title">
-        <div class="flex flex-wrap items-end justify-between gap-4">
+    {{-- Acado's grey "About us" band --}}
+    <section class="band-grey mt-20 md:mt-24" aria-labelledby="about-title">
+        <div class="wrap grid gap-8 py-16 md:py-20 lg:grid-cols-[0.75fr_1.25fr] lg:items-center lg:gap-16">
+            <h2 id="about-title" class="section-title">About us</h2>
             <div>
-                <x-rack-tag code="A-01" label="Divisions" />
-                <h2 id="div-title" class="display-2 mt-4 max-w-2xl">Four divisions, one delivery.</h2>
+                <p class="font-display text-xl font-medium leading-snug text-primary md:text-2xl">Acado St. Lucia Limited, formerly Peter &amp; Company Limited, is a premier distributor of Fast-Moving Consumer Goods (FMCG) in St. Lucia.</p>
+                <p class="mt-5 max-w-[65ch]">With roots dating back to the 1890s, Acado St. Lucia is one of the island's largest and most progressive distributors of consumer products. The company was founded in 1891 as Peter &amp; Company by William Peter, initially operating as a coaling business. In 1961, J. N. Goddard &amp; Sons of Barbados acquired a majority stake.</p>
+                <p class="mt-4 max-w-[65ch]">Over time, the company expanded into food and beverage, building materials and Nissan dealerships, and developed its own retail stores: PCD Food Mart, PCD Wines &amp; Spirits and Wet &amp; Cold Express.</p>
+                <a href="{{ route('about') }}" class="btn btn-outline mt-8">Discover who we are<x-icon name="arrow-right" class="nudge h-4 w-4" /></a>
             </div>
-            <a href="{{ route('brands.index') }}" class="btn btn-outline">All {{ $brandCount }} brands<x-icon name="arrow-right" class="nudge h-4 w-4" /></a>
         </div>
-        <div class="mt-10 grid gap-6 md:grid-cols-2">
-            @foreach ($divisions as $key => $d)
-                <article class="card-link group grid overflow-hidden rounded-md border-[1.5px] border-ink bg-surface sm:grid-cols-[0.9fr_1.1fr]" data-reveal style="--reveal-delay: {{ $loop->index * 80 }}ms">
-                    <div class="card-img photo aspect-[16/10] sm:aspect-auto sm:min-h-full">
-                        <x-photo :key="$d['photo']" alt="" sizes="(min-width: 768px) 22vw, 100vw" class="h-full w-full" />
-                    </div>
-                    <div class="flex flex-col p-6">
-                        <div class="flex items-center gap-3">
-                            <x-stencil :text="$d['code']" class="text-4xl text-ink" />
-                            @if (! empty($d['restricted']))<span class="chip" data-tone="attention"><x-icon name="lock" />Licensed buyers only</span>@endif
+    </section>
+
+    {{-- Acado's orange "Our portfolio" band: the four divisions --}}
+    <section class="band-orange on-orange" aria-labelledby="div-title">
+        <div class="wrap py-16 md:py-20">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <h2 id="div-title" class="section-title !text-white">Our portfolio</h2>
+                    <p class="font-display mt-3 max-w-xl text-2xl font-semibold text-white">Four divisions, one delivery.</p>
+                </div>
+                <a href="{{ route('brands.index') }}" class="btn btn-white">All {{ $brandCount }} brands<x-icon name="arrow-right" class="nudge h-4 w-4" /></a>
+            </div>
+            <ul class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ($divisions as $key => $d)
+                    <li class="card-link group flex flex-col overflow-hidden rounded-[var(--radius)] bg-surface shadow-lg transition hover:-translate-y-1" data-reveal style="--reveal-delay: {{ $loop->index * 80 }}ms">
+                        <div class="card-img grid aspect-[4/3] place-items-center bg-white">
+                            <img src="{{ asset('img/portfolio/'.$key.'.webp') }}" alt="" width="250" height="250" loading="lazy" decoding="async" class="h-[88%] w-auto">
                         </div>
-                        <h3 class="display-3 mt-3"><a href="{{ route('brands.show', $key) }}" class="stretch">{{ $d['name'] }}</a></h3>
-                        <p class="mt-2 text-ink-2">{{ $d['blurb'] }}</p>
-                        <p class="mt-4 text-sm font-semibold text-ink-3">{{ collect($d['brands'])->take(5)->join(' · ') }} and {{ count($d['brands']) - 5 }} more</p>
-                    </div>
-                </article>
-            @endforeach
+                        <div class="flex flex-1 flex-col p-5">
+                            <h3 class="text-lg font-semibold leading-snug"><a href="{{ route('brands.show', $key) }}" class="stretch">{{ $d['name'] }}</a></h3>
+                            <p class="mt-2 text-[0.9375rem] text-ink-2">{{ $d['blurb'] }}</p>
+                            <p class="mt-auto flex flex-wrap items-center gap-2 pt-4 text-sm font-semibold text-primary">
+                                {{ count($d['brands']) }} brands<x-icon name="arrow-right" class="h-4 w-4 transition group-hover:translate-x-1" />
+                                @if (! empty($d['restricted']))<span class="chip ml-auto" data-tone="attention"><x-icon name="lock" />Licensed buyers only</span>@endif
+                            </p>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
         </div>
     </section>
 
     {{-- From the catalogue --}}
     @if ($featured->isNotEmpty())
-        <section class="mt-20 border-y-[1.5px] border-ink bg-surface py-16 md:mt-28 md:py-20" aria-labelledby="cat-title">
-            <div class="wrap">
-                <div class="flex flex-wrap items-end justify-between gap-4">
-                    <div>
-                        <x-rack-tag code="A-02" label="Trade catalogue" />
-                        <h2 id="cat-title" class="display-2 mt-4 max-w-2xl">Add it to your order list.</h2>
-                        <p class="mt-3 max-w-[60ch] text-ink-2">Pick the cases you need and send the list. Prices, availability and your delivery day are confirmed by the trade desk, so you never pay for something that isn't on the truck.</p>
-                    </div>
-                    <a href="{{ route('catalogue') }}" class="btn btn-outline">All {{ $productCount }} lines<x-icon name="arrow-right" class="nudge h-4 w-4" /></a>
+        <section class="wrap mt-20 md:mt-24" aria-labelledby="cat-title">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <x-rack-tag label="Trade catalogue" />
+                    <h2 id="cat-title" class="display-2 mt-3 max-w-2xl">Add it to your order list.</h2>
+                    <p class="mt-3 max-w-[60ch] text-ink-2">Pick the cases you need and send the list. Prices, availability and your delivery day are confirmed by the trade desk, so you never pay for something that isn't on the truck.</p>
                 </div>
-                <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                    @foreach ($featured as $p)
-                        <x-product-card :product="$p" :on-list="\App\Support\OrderList::items()[$p->id] ?? 0" :class="$loop->index >= 4 ? 'max-sm:hidden' : ''" />
-                    @endforeach
-                </div>
+                <a href="{{ route('catalogue') }}" class="btn btn-outline">All {{ $productCount }} lines<x-icon name="arrow-right" class="nudge h-4 w-4" /></a>
+            </div>
+            <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ($featured as $p)
+                    <x-product-card :product="$p" :on-list="\App\Support\OrderList::items()[$p->id] ?? 0" :class="$loop->index >= 4 ? 'max-sm:hidden' : ''" />
+                @endforeach
             </div>
         </section>
     @endif
 
+    {{-- Acado's "Featured brands" logo grid --}}
+    <section class="wrap mt-20 md:mt-28" aria-labelledby="brands-title">
+        <div class="text-center">
+            <h2 id="brands-title" class="section-title">Featured brands</h2>
+            <p class="mx-auto mt-3 max-w-[60ch] text-ink-2">A few of the {{ $brandCount }} brands we distribute. Choose one to see its division.</p>
+        </div>
+        <ul class="logo-grid mt-10">
+            @foreach ((array) peterco('featured_brands') as $b)
+                <li><a href="{{ route('brands.show', $divisionOf($b)) }}" class="logo-tile">
+                    @if ($logo = brand_logo($b))<img src="{{ $logo }}" alt="{{ $b }}" width="320" height="320" loading="lazy" decoding="async">@else<span class="text-tile w-full">{{ $b }}</span>@endif
+                </a></li>
+            @endforeach
+        </ul>
+        <div class="mt-8 text-center"><a href="{{ route('brands.index') }}" class="btn btn-outline">See every brand, by division<x-icon name="arrow-right" class="nudge h-4 w-4" /></a></div>
+    </section>
+
     {{-- How ordering works --}}
-    <section class="wrap mt-20 md:mt-28" aria-labelledby="how-title">
-        <div class="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+    <section class="band-grey mt-20 md:mt-28" aria-labelledby="how-title">
+        <div class="wrap grid gap-12 py-16 md:py-20 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
             <div>
-                <x-rack-tag code="A-03" label="How trade ordering works" />
-                <h2 id="how-title" class="display-2 mt-4">From list to loading bay in four steps.</h2>
+                <x-rack-tag label="How trade ordering works" />
+                <h2 id="how-title" class="display-2 mt-3">From list to loading bay in four steps.</h2>
                 <p class="mt-4 max-w-[60ch] text-ink-2">The website takes the request; your sales representative and the trade desk do what they always have. Nothing is charged online.</p>
                 <a href="{{ route('order.show') }}" class="btn btn-primary mt-8">Start an order list<x-icon name="arrow-right" class="nudge h-4 w-4" /></a>
             </div>
@@ -121,9 +157,9 @@
                     ['The trade desk calls you', 'Prices, availability, substitutions and the delivery day, confirmed by phone or WhatsApp.'],
                     ['Delivered from Cul De Sac', 'Your reference number follows the order from the warehouse to your door.'],
                 ] as $i => [$h, $t])
-                    <li class="carton p-5 pt-6">
-                        <x-stencil :text="sprintf('%02d', $i + 1)" class="text-3xl text-link" />
-                        <h3 class="mt-2 text-lg font-bold">{{ $h }}</h3>
+                    <li class="carton p-5">
+                        <x-stencil :text="sprintf('%02d', $i + 1)" class="text-3xl text-title" />
+                        <h3 class="mt-2 text-lg font-semibold">{{ $h }}</h3>
                         <p class="mt-1 text-[0.9375rem] text-ink-2">{{ $t }}</p>
                     </li>
                 @endforeach
@@ -133,15 +169,15 @@
 
     {{-- Pharmacies --}}
     <section class="wrap mt-20 md:mt-28" aria-labelledby="rx-title">
-        <div class="grid overflow-hidden rounded-md border-[1.5px] border-ink bg-surface md:grid-cols-[1fr_1fr]">
-            <div class="photo aspect-[16/10] md:aspect-auto"><x-photo key="pharmacy-shelves" alt="Pharmacy shelves stocked with over-the-counter medicines" sizes="(min-width: 768px) 50vw, 100vw" class="h-full w-full" /></div>
-            <div class="p-7 md:p-10">
-                <x-rack-tag code="RX" label="Pharmaceuticals" />
-                <h2 id="rx-title" class="display-3 mt-4">For licensed pharmacies, hospitals and clinics.</h2>
+        <div class="grid overflow-hidden rounded-[var(--radius)] border border-line bg-surface shadow-md md:grid-cols-[0.8fr_1.2fr]">
+            <div class="photo aspect-square bg-white md:aspect-auto"><x-photo key="division-pharmaceutical" alt="A shopping cart filled with medicine packs, from Acado St. Lucia's pharmaceutical division" sizes="(min-width: 768px) 40vw, 100vw" class="h-full w-full !bg-white" /></div>
+            <div class="flex flex-col justify-center p-7 md:p-10">
+                <x-rack-tag label="Pharmaceuticals" />
+                <h2 id="rx-title" class="display-3 mt-3">For licensed pharmacies, hospitals and clinics.</h2>
                 <p class="mt-3 text-ink-2">{{ $divisions['pharmaceutical']['blurb'] }} Pharmaceutical orders are accepted only from approved pharmacy and clinic accounts with a licence on file. We do not sell medicines to the public.</p>
                 <div class="mt-6 flex flex-wrap gap-3">
                     <a href="{{ route('brands.show', 'pharmaceutical') }}" class="btn btn-outline">The pharmaceutical division</a>
-                    <a href="{{ route('account.create') }}" class="btn btn-ink">Open a pharmacy account</a>
+                    <a href="{{ route('account.create') }}" class="btn btn-primary">Open a pharmacy account</a>
                 </div>
             </div>
         </div>
@@ -149,12 +185,12 @@
 
     {{-- Heritage --}}
     <section class="wrap mt-20 md:mt-28" aria-labelledby="hist-title">
-        <x-rack-tag code="A-04" label="Since 1891" />
-        <h2 id="hist-title" class="display-2 mt-4 max-w-3xl">From a Castries coaling business to Acado St. Lucia.</h2>
-        <ol class="mt-10 grid gap-x-6 gap-y-8 border-t-2 border-ink pt-8 sm:grid-cols-2 lg:grid-cols-3">
+        <x-rack-tag label="Since 1891" />
+        <h2 id="hist-title" class="display-2 mt-3 max-w-3xl">From a Castries coaling business to Acado St. Lucia.</h2>
+        <ol class="mt-10 grid gap-x-8 gap-y-8 border-t border-line pt-8 sm:grid-cols-2 lg:grid-cols-3">
             @foreach (peterco('history') as $h)
                 <li data-reveal style="--reveal-delay: {{ $loop->index * 60 }}ms">
-                    <x-stencil :text="$h['year']" class="text-4xl text-ink" />
+                    <x-stencil :text="$h['year']" class="text-4xl text-title" />
                     <p class="mt-2 text-ink-2">{{ $h['text'] }}</p>
                 </li>
             @endforeach
@@ -164,37 +200,21 @@
 
     {{-- Careers + principals --}}
     <section class="wrap mt-20 grid gap-6 md:mt-28 md:grid-cols-2" aria-label="Careers and principals">
-        <article class="card-link overflow-hidden rounded-md border-[1.5px] border-ink bg-surface">
+        <article class="card-link carton lift overflow-hidden">
             <div class="card-img photo aspect-[16/8]"><x-photo key="castries-container-ship" alt="" sizes="(min-width: 768px) 45vw, 100vw" class="h-full w-full" /></div>
             <div class="p-6">
-                <x-rack-tag code="PR" label="Principals" />
-                <h2 class="display-3 mt-4"><a href="{{ route('principals') }}" class="stretch">Bring your brand to St Lucia.</a></h2>
+                <x-rack-tag label="Principals" />
+                <h2 class="display-3 mt-3"><a href="{{ route('principals') }}" class="stretch">Bring your brand to St Lucia.</a></h2>
                 <p class="mt-2 text-ink-2">Brand owners outside St Lucia can tell us about their range, markets and plans. Our management team replies by email.</p>
             </div>
         </article>
-        <article class="card-link overflow-hidden rounded-md border-[1.5px] border-ink bg-surface">
-            <div class="card-img photo aspect-[16/8]"><x-photo key="warehouse-racking" alt="" sizes="(min-width: 768px) 45vw, 100vw" class="h-full w-full" /></div>
+        <article class="card-link carton lift overflow-hidden">
+            <div class="card-img photo aspect-[16/8]"><x-photo key="acado-careers" alt="" sizes="(min-width: 768px) 45vw, 100vw" class="h-full w-full" position="70% 30%" /></div>
             <div class="p-6">
-                <x-rack-tag code="CV" label="Careers" />
-                <h2 class="display-3 mt-4"><a href="{{ route('careers.index') }}" class="stretch">Work in the warehouse, on the road or in sales.</a></h2>
+                <x-rack-tag label="Careers" />
+                <h2 class="display-3 mt-3"><a href="{{ route('careers.index') }}" class="stretch">Work in the warehouse, on the road or in sales.</a></h2>
                 <p class="mt-2 text-ink-2">{{ $openVacancies ? $openVacancies.' open '.\Illuminate\Support\Str::plural('vacancy', $openVacancies).' right now, and' : 'No open vacancies today, but' }} you can send a general application with your CV at any time.</p>
             </div>
         </article>
-    </section>
-
-    {{-- Closing call to action --}}
-    <section class="wrap mt-20 md:mt-28">
-        <div class="relative overflow-hidden rounded-md bg-crate-900 p-8 text-white on-dark md:p-12">
-            <div class="grid gap-8 md:grid-cols-[1.4fr_1fr] md:items-center">
-                <div>
-                    <h2 class="display-2 text-white">Not a trade customer yet?</h2>
-                    <p class="mt-3 max-w-[55ch] text-white/80">Apply for a cash-on-delivery or credit account online. Upload your trade licence, VAT certificate and ID, and credit control takes it from there.</p>
-                </div>
-                <div class="flex flex-wrap gap-3 md:justify-end">
-                    <a href="{{ route('account.create') }}" class="btn bg-sky text-[#0d1b24] hover:bg-white">Apply for an account<x-icon name="arrow-right" class="nudge h-4 w-4" /></a>
-                    @if ($phone)<a href="{{ tel_href($phone) }}" class="btn btn-on-dark"><x-icon name="phone" class="h-4 w-4" />{{ format_phone($phone) }}</a>@endif
-                </div>
-            </div>
-        </div>
     </section>
 </x-layouts.site>

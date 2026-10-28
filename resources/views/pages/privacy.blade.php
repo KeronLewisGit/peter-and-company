@@ -1,5 +1,5 @@
 <x-layouts.site title="Privacy notice" description="How Acado St. Lucia handles the details you send through this website.">
-    <x-page-hero title="Privacy notice" lead="What we collect through this website, why, who sees it and how long we keep it." code="L-01" label="Privacy" photo="pitons" alt="The Pitons, St Lucia" label-code="PRIVACY" label-line="Draft for review" />
+    <x-page-hero title="Privacy notice" lead="What we collect through this website, why, who sees it and how long we keep it." label="Privacy" photo="pitons" alt="The Pitons, St Lucia" />
     <section class="wrap mt-12 md:mt-16">
         <div class="prose-copy measure text-ink-2">
             <p><strong class="text-ink">Draft for review by Acado St. Lucia's legal adviser before launch.</strong> Last updated {{ now()->format('j F Y') }}.</p>

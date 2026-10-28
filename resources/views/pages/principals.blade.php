@@ -1,12 +1,12 @@
 @php($kept = \App\Support\UploadStash::for('principal')->names())
 <x-layouts.site title="Brand owners and principals" description="Brand owners looking for distribution in St Lucia: tell Acado St. Lucia about your range, markets and plans.">
-    <x-page-hero title="Distribution in St Lucia for your brand." lead="For manufacturers and brand owners outside St Lucia. Tell us about your range, where it sells today and what you need from a distributor. Our management team reviews every enquiry." code="P-01" label="Principals" photo="castries-harbour" alt="Castries harbour with cargo and cruise ships at the quay" label-code="PR · LC" label-line="Import · Warehouse · Sell in" />
+    <x-page-hero title="Distribution in St Lucia for your brand." lead="For manufacturers and brand owners outside St Lucia. Tell us about your range, where it sells today and what you need from a distributor. Our management team reviews every enquiry." label="Principals" photo="castries-harbour" alt="Castries harbour with cargo and cruise ships at the quay" />
 
     <section class="wrap mt-12 md:mt-16">
         <div class="grid gap-12 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
             <aside class="space-y-5">
                 <h2 class="display-3">What a principal gets</h2>
-                <dl class="facts border-t-2 border-ink">
+                <dl class="facts border-t-2 border-orange">
                     <div><dt>Coverage</dt><dd>Supermarkets, minimarts, bars, hotels and pharmacies island-wide</dd></div>
                     <div><dt>Divisions</dt><dd>{{ collect(peterco('divisions'))->pluck('short')->join(', ', ' and ') }}</dd></div>
                     <div><dt>Retail</dt><dd>{{ count(peterco('retail')) }} company stores in Castries, Rodney Bay, Vieux Fort and Bois D'Orange</dd></div>

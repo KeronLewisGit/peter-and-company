@@ -64,6 +64,18 @@ class PublicSiteTest extends TestCase
         }
     }
 
+    public function test_brand_logo_tiles_exist_for_configured_brands_and_are_credited(): void
+    {
+        $configured = collect((array) config('peterco.divisions'))->flatMap(fn (array $d) => $d['brands'])->all();
+        foreach ((array) config('brand-logos') as $brand => $file) {
+            $this->assertContains($brand, $configured, "Logo for an unknown brand: {$brand}");
+            $this->assertFileExists(public_path("img/brands/{$file}.webp"));
+        }
+        $this->assertNull(brand_logo('Not A Real Brand'));
+        $this->get('/brands/wines-spirits')->assertSee(brand_logo('Hennessy'), false)->assertSee('Hennessy');
+        $this->get('/photo-credits')->assertOk()->assertSee('trademarks of their owners');
+    }
+
     public function test_closed_and_hidden_vacancies_are_not_listed(): void
     {
         Vacancy::factory()->create(['title' => 'Open Role']);

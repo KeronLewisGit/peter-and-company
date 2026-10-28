@@ -4,7 +4,7 @@
     $kept = \App\Support\UploadStash::for('account')->names();
 @endphp
 <x-layouts.site title="Open a trade account" description="Apply for a cash-on-delivery or credit trade account with Acado St. Lucia. Upload your trade licence, VAT certificate and ID securely.">
-    <x-page-hero title="Open a trade account" lead="For shops, bars, hotels, restaurants, pharmacies and clinics in St Lucia. Apply for cash on delivery or credit terms; credit control reviews your documents and calls you." code="T-01" label="Trade account" photo="castries-market" alt="Shoppers and stalls at the Castries market" label-code="COD · Credit" label-line="Credit control" />
+    <x-page-hero title="Open a trade account" lead="For shops, bars, hotels, restaurants, pharmacies and clinics in St Lucia. Apply for cash on delivery or credit terms; credit control reviews your documents and calls you." label="Trade account" photo="castries-market" alt="Shoppers and stalls at the Castries market" />
 
     <section class="wrap mt-12 md:mt-16">
         <div class="grid gap-12 lg:grid-cols-[1.25fr_0.75fr] lg:items-start">
@@ -44,7 +44,7 @@
                             <x-field name="address" label="Business address" :required="true" maxlength="500" autocomplete="street-address" />
                             <x-field name="outlets" label="Outlets" type="number" :optional="true" min="1" max="200" inputmode="numeric" />
                         </div>
-                        <div class="carton space-y-5 p-5 pt-6" x-show="medical || tradeType === ''">
+                        <div class="carton space-y-5 p-5" x-show="medical || tradeType === ''">
                             <p class="flex items-center gap-2 font-bold"><x-icon name="pill" class="h-5 w-5 text-link" />Pharmacies and clinics</p>
                             <p class="-mt-3 text-[0.9375rem] text-ink-2">Required for pharmacies and clinics. Pharmaceutical products are supplied to licensed buyers only.</p>
                             <div class="grid gap-5 sm:grid-cols-2">
@@ -99,7 +99,7 @@
                 </form>
             </div>
             <aside class="space-y-5 lg:sticky lg:top-28">
-                <div class="carton p-6 pt-7">
+                <div class="carton p-6">
                     <h2 class="text-lg font-bold">What you will need</h2>
                     <ul class="mt-3 space-y-2 text-[0.9375rem] text-ink-2">
                         @foreach (['Your trade licence', 'Your VAT certificate, if VAT-registered', 'Photo ID of the owner or a director', 'Pharmacies and clinics: your licence', 'For credit: one or two trade references'] as $i)
@@ -107,7 +107,7 @@
                         @endforeach
                     </ul>
                 </div>
-                <div class="carton p-6 pt-7">
+                <div class="carton p-6">
                     <h2 class="text-lg font-bold">After you apply</h2>
                     <p class="mt-2 text-[0.9375rem] text-ink-2">Credit control reviews the application, may ask for a missing document, and emails your account number once it is approved. You can send order requests in the meantime; they are matched to your account by phone.</p>
                 </div>

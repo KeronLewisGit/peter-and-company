@@ -3,7 +3,7 @@
     $total = $lines->sum('cases');
 @endphp
 <x-layouts.site title="Order list" description="Send a trade order request to Acado St. Lucia. The trade desk confirms prices, availability and your delivery day.">
-    <x-page-hero title="Your order list" lead="Check the cases, tell us where to deliver and send the request. The trade desk calls or messages you to confirm prices, availability and the delivery day. Nothing is charged online." code="O-01" label="Order request" photo="castries-container-ship" alt="A container ship moored at the port of Castries" :label-code="$lines->count().' lines'" :label-line="$total.' cases'" />
+    <x-page-hero title="Your order list" lead="Check the cases, tell us where to deliver and send the request. The trade desk calls or messages you to confirm prices, availability and the delivery day. Nothing is charged online." label="Order request" photo="castries-container-ship" alt="A container ship moored at the port of Castries" />
 
     <section class="wrap mt-12 md:mt-16">
         <x-form-errors />
@@ -13,7 +13,7 @@
                 <fieldset>
                     <legend class="fieldset-title mb-5"><span class="step">1</span>What you need</legend>
                     @if ($lines->isEmpty())
-                        <div class="carton p-6 pt-7">
+                        <div class="carton p-6">
                             <p class="font-bold">Your list is empty.</p>
                             <p class="mt-1 text-ink-2">Add cases from the catalogue, or type what you need under "Other items" below.</p>
                             <a href="{{ route('catalogue') }}" class="btn btn-outline btn-sm mt-4">Open the catalogue</a>
@@ -81,12 +81,12 @@
             </div>
 
             <aside class="lg:sticky lg:top-28">
-                <div class="pallet-label !shadow-none" aria-hidden="true">
-                    <div class="row"><span>Order request</span><span>Cul De Sac · LC</span></div>
-                    <p class="big num">{{ $lines->count() }} lines · {{ $total }} cs</p>
-                    <div class="barcode"></div>
+                <div class="band-navy on-dark relative overflow-hidden rounded-[var(--radius)] p-5 shadow-md" aria-hidden="true">
+                    <span class="absolute inset-x-0 bottom-0 h-1 bg-[linear-gradient(90deg,var(--orange),var(--yellow))]"></span>
+                    <p class="kicker text-white/85">Order request</p>
+                    <p class="font-display num mt-1 text-3xl font-semibold text-white">{{ $lines->count() }} lines · {{ $total }} cases</p>
                 </div>
-                <div class="carton mt-5 p-6 pt-7">
+                <div class="carton mt-5 p-6">
                     <h2 class="text-lg font-bold">What happens next</h2>
                     <ol class="mt-3 list-decimal space-y-2 pl-5 text-[0.9375rem] text-ink-2">
                         <li>You get a reference number on screen and by email.</li>
