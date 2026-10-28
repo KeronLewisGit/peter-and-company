@@ -31,36 +31,52 @@
     "file": "assets/figtree-700-normal-th6qEP7c.woff2",
     "src": "_figtree-700-normal-th6qEP7c.woff2"
   },
-  "_fonts-DHO3Ufwx.css": {
-    "file": "assets/fonts-DHO3Ufwx.css",
-    "src": "_fonts-DHO3Ufwx.css"
+  "_fonts-BttuiKR_.css": {
+    "file": "assets/fonts-BttuiKR_.css",
+    "src": "_fonts-BttuiKR_.css"
   },
-  "_schibsted-grotesk-500-normal-Ba39e-CX.woff": {
-    "file": "assets/schibsted-grotesk-500-normal-Ba39e-CX.woff",
-    "src": "_schibsted-grotesk-500-normal-Ba39e-CX.woff"
+  "_montserrat-300-normal-BgP24wlQ.woff2": {
+    "file": "assets/montserrat-300-normal-BgP24wlQ.woff2",
+    "src": "_montserrat-300-normal-BgP24wlQ.woff2"
   },
-  "_schibsted-grotesk-500-normal-rf9C4Thp.woff2": {
-    "file": "assets/schibsted-grotesk-500-normal-rf9C4Thp.woff2",
-    "src": "_schibsted-grotesk-500-normal-rf9C4Thp.woff2"
+  "_montserrat-300-normal-sTRdVzlf.woff": {
+    "file": "assets/montserrat-300-normal-sTRdVzlf.woff",
+    "src": "_montserrat-300-normal-sTRdVzlf.woff"
   },
-  "_schibsted-grotesk-700-normal-BkH0uJ1o.woff2": {
-    "file": "assets/schibsted-grotesk-700-normal-BkH0uJ1o.woff2",
-    "src": "_schibsted-grotesk-700-normal-BkH0uJ1o.woff2"
+  "_montserrat-400-normal-BLhwKU8k.woff2": {
+    "file": "assets/montserrat-400-normal-BLhwKU8k.woff2",
+    "src": "_montserrat-400-normal-BLhwKU8k.woff2"
   },
-  "_schibsted-grotesk-700-normal-Dz-okVa0.woff": {
-    "file": "assets/schibsted-grotesk-700-normal-Dz-okVa0.woff",
-    "src": "_schibsted-grotesk-700-normal-Dz-okVa0.woff"
+  "_montserrat-400-normal-xItZbAXg.woff": {
+    "file": "assets/montserrat-400-normal-xItZbAXg.woff",
+    "src": "_montserrat-400-normal-xItZbAXg.woff"
   },
-  "_schibsted-grotesk-800-normal-CIaq-TR1.woff2": {
-    "file": "assets/schibsted-grotesk-800-normal-CIaq-TR1.woff2",
-    "src": "_schibsted-grotesk-800-normal-CIaq-TR1.woff2"
+  "_montserrat-500-normal-DRFEGfly.woff2": {
+    "file": "assets/montserrat-500-normal-DRFEGfly.woff2",
+    "src": "_montserrat-500-normal-DRFEGfly.woff2"
   },
-  "_schibsted-grotesk-800-normal-Dl5-MP1T.woff": {
-    "file": "assets/schibsted-grotesk-800-normal-Dl5-MP1T.woff",
-    "src": "_schibsted-grotesk-800-normal-Dl5-MP1T.woff"
+  "_montserrat-500-normal-Dok2oTci.woff": {
+    "file": "assets/montserrat-500-normal-Dok2oTci.woff",
+    "src": "_montserrat-500-normal-Dok2oTci.woff"
+  },
+  "_montserrat-600-normal-CdhFl4lI.woff": {
+    "file": "assets/montserrat-600-normal-CdhFl4lI.woff",
+    "src": "_montserrat-600-normal-CdhFl4lI.woff"
+  },
+  "_montserrat-600-normal-UVxSCcoG.woff2": {
+    "file": "assets/montserrat-600-normal-UVxSCcoG.woff2",
+    "src": "_montserrat-600-normal-UVxSCcoG.woff2"
+  },
+  "_montserrat-700-normal-BWkrl476.woff": {
+    "file": "assets/montserrat-700-normal-BWkrl476.woff",
+    "src": "_montserrat-700-normal-BWkrl476.woff"
+  },
+  "_montserrat-700-normal-BdjcYUrC.woff2": {
+    "file": "assets/montserrat-700-normal-BdjcYUrC.woff2",
+    "src": "_montserrat-700-normal-BdjcYUrC.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-Ayjl4L8W.css",
+    "file": "assets/app-B6q1cq3h.css",
     "name": "app",
     "names": [
       "app.css"
