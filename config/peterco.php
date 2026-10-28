@@ -93,6 +93,32 @@ return [
         'soufriere' => 'Soufrière', 'choiseul' => 'Choiseul', 'laborie' => 'Laborie', 'vieux_fort' => 'Vieux Fort',
         'micoud' => 'Micoud', 'dennery' => 'Dennery',
     ],
+    // The home-page delivery map (resources/data/st-lucia-districts.php). The route days are a SAMPLE for the demo,
+    // not Acado's schedule: replace them with the trade desk's real days and set 'placeholder' to false.
+    // 'at' is the route's end point on the map (district centre or main town), in map units.
+    'delivery_map' => [
+        'placeholder' => true,
+        'hub' => [395, 455], // Cul De Sac
+        'districts' => [
+            'castries' => ['days' => [1, 2, 3, 4, 5], 'at' => [438, 378]],
+            'gros_islet' => ['days' => [1, 3, 5], 'at' => [612, 300]],
+            'dennery' => ['days' => [2, 5], 'at' => [628, 612]],
+            'anse_la_raye' => ['days' => [2, 4], 'at' => [380, 630]],
+            'canaries' => ['days' => [2, 4], 'at' => [332, 690]],
+            'soufriere' => ['days' => [2, 4], 'at' => [320, 806]],
+            'micoud' => ['days' => [2, 5], 'at' => [600, 860]],
+            'choiseul' => ['days' => [3], 'at' => [328, 958]],
+            'laborie' => ['days' => [3], 'at' => [414, 1010]],
+            'vieux_fort' => ['days' => [1, 3, 5], 'at' => [530, 1090]],
+        ],
+        'credit' => [
+            'title' => 'Castries in Saint Lucia 2014.svg',
+            'author' => 'NordNordWest',
+            'license' => 'CC BY-SA 3.0 DE',
+            'license_url' => 'https://creativecommons.org/licenses/by-sa/3.0/de/deed.en',
+            'source' => 'https://commons.wikimedia.org/wiki/File:Castries_in_Saint_Lucia_2014.svg',
+        ],
+    ],
     'years_trading' => ['new' => 'Opening soon or under 1 year', '1_3' => '1 to 3 years', '3_10' => '3 to 10 years', 'o10' => 'Over 10 years'],
     'availability' => ['now' => 'Straight away', '2w' => 'In 2 weeks', '1m' => 'In a month', 'later' => 'Later'],
     'enquiry_topics' => [

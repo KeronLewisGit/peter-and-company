@@ -26,6 +26,14 @@
         <p class="measure mt-2 text-ink-2">The {{ count(array_unique(config('brand-logos'))) }} brand-logo tiles on the brand, division and catalogue pages are the brand logos as published on acadostlucia.com (the logo grids on its four division pages); trademarks of their owners.</p>
     </section>
 
+    @php $mapCredit = (array) peterco('delivery_map.credit'); @endphp
+    <section class="wrap mt-16" aria-labelledby="map-credit-title">
+        <h2 id="map-credit-title" class="display-3">Delivery map</h2>
+        <p class="measure mt-2 text-ink-2">The district outlines on the home-page delivery map are traced from “{{ $mapCredit['title'] }}” by {{ $mapCredit['author'] }}, Wikimedia Commons,
+            <a class="text-link" href="{{ $mapCredit['license_url'] }}" rel="license noopener" target="_blank">{{ $mapCredit['license'] }}</a> · <a class="text-link" href="{{ $mapCredit['source'] }}" rel="noopener" target="_blank">Source</a>.
+            Recoloured, cropped and simplified; the derived map is shared under the same licence.</p>
+    </section>
+
     <section class="wrap mt-16" aria-labelledby="commons-title">
         <h2 id="commons-title" class="display-3">Wikimedia Commons</h2>
         <p class="measure mt-2 text-ink-2">The harbour, port, Cul de Sac, Pitons, Marigot Bay and Castries market photos, for the pages the company has no photo for yet. They should be replaced with photos of the company's warehouse, fleet and team.</p>
