@@ -48,13 +48,14 @@ return [
         'LinkedIn' => 'https://www.linkedin.com/company/acadostlucia/',
     ],
 
-    // From acadostlucia.com/our-retail-stores (the company's own shops, not trade customers).
+    // From acadostlucia.com/our-retail-stores (the company's own shops, not trade customers),
+    // with the photo of each store published there.
     'retail' => [
-        ['name' => 'PCD Wines & Spirits', 'where' => 'Bridge Street, Castries', 'phone' => '758-457-7082'],
-        ['name' => 'PCD Wines & Spirits', 'where' => 'JQ Mall, Rodney Bay', 'phone' => '758-457-7083'],
-        ['name' => 'PCD Food Mart', 'where' => 'Clark Street, Vieux Fort', 'phone' => '758-457-7084'],
-        ['name' => 'PCD Food Mart', 'where' => 'S&S Plaza, Bois D\'Orange', 'phone' => '758-457-7089'],
-        ['name' => 'Wet & Cold Express', 'where' => 'Mongiraud Street, Castries', 'phone' => '758-457-7086'],
+        ['name' => 'PCD Wines & Spirits', 'where' => 'Bridge Street, Castries', 'phone' => '758-457-7082', 'photo' => 'store-bridge-street'],
+        ['name' => 'PCD Wines & Spirits', 'where' => 'JQ Mall, Rodney Bay', 'phone' => '758-457-7083', 'photo' => 'store-jq-mall'],
+        ['name' => 'PCD Food Mart', 'where' => 'Clark Street, Vieux Fort', 'phone' => '758-457-7084', 'photo' => 'store-vieux-fort'],
+        ['name' => 'PCD Food Mart', 'where' => 'S&S Plaza, Bois D\'Orange', 'phone' => '758-457-7089', 'photo' => 'store-bois-dorange'],
+        ['name' => 'Wet & Cold Express', 'where' => 'Mongiraud Street, Castries', 'phone' => '758-457-7086', 'photo' => 'store-wet-cold'],
     ],
 
     'history' => [
@@ -65,6 +66,21 @@ return [
         ['year' => '2023', 'text' => 'PCD is the exclusive distributor of Carib Brewery products and El Dorado rum in St Lucia, and brings the CPL launch to the Harbour Club.'],
         ['year' => '2025', 'text' => 'Caribbean Distribution Partners becomes Acado Limited, and Peter & Company Limited becomes Acado St. Lucia Limited.'],
     ],
+
+    // The "Featured brands" grid on the acadostlucia.com home page, in its order.
+    'featured_brands' => ['Veuve Clicquot', 'Eve', 'Anchor', 'Diquez', 'Carib', 'Beep', 'Smirnoff', 'Bombay Sapphire', 'Campari', 'Johnnie Walker',
+        'El Dorado', 'Carlisle Laboratories', 'Dewar\'s', 'Peardrax', 'BOP', 'Go!', 'Pinehill', 'Sante', 'Farmer\'s Choice', 'Hennessy',
+        'Moët & Chandon', 'Swiss', 'Super Cow', 'Grace'],
+
+    // Acado's core values, as published on acadostlucia.com/who-we-are.
+    'values' => [
+        'People Centered' => 'We value our people and recognize that people are at the heart of our business and at the heart of everything we do.',
+        'Integrity' => 'We act with honesty, openness and transparency.',
+        'Trust' => 'We offer products and services that we believe in and that our customers trust.',
+        'Ownership' => 'We encourage and engender empowered teams who take responsibility for successfully leading each subsidiary.',
+        'Entrepreneurial Spirit' => 'We foster a mindset that embraces critical questioning, innovation and continuous improvement and inspires a sense of ownership.',
+    ],
+    'vision' => 'To be the benchmark of our region by sustainably building brands that enrich lives for generations to come.',
 
     // Delivery requests on the order form: weekdays, the next working day up to two weeks ahead.
     'delivery' => ['days_ahead' => 14, 'weekdays' => [1, 2, 3, 4, 5]],
@@ -90,15 +106,16 @@ return [
 
     /*
      * The four divisions, named as on acadostlucia.com, with the brands shown on each
-     * division page there (logo grids uploaded May 2025, read as text). Dated relationships
-     * come from The Voice. Brand names only: no brand-owner logos are used on this site.
+     * division page there (logo grids uploaded May 2025, read tile by tile). Dated relationships
+     * come from The Voice. Each brand's logo tile, as published on those pages, is mapped in
+     * config/brand-logos.php.
      */
     'divisions' => [
         'wines-spirits' => [
             'name' => 'Wines, Spirits & Tobacco',
             'short' => 'Wines & spirits',
             'code' => 'WS',
-            'photo' => 'bar-shelf',
+            'photo' => 'division-wines-spirits',
             'blurb' => 'Champagne, wine, rum, whisky, cognac, vodka, gin and tequila for bars, hotels, restaurants and shops across the island.',
             'note' => 'Hennessy has been distributed by the company for more than 35 years (The Voice, March 2024), and El Dorado rum exclusively since at least 2023.',
             'categories' => ['Rum', 'Cognac & brandy', 'Whisky', 'Vodka', 'Gin', 'Tequila', 'Liqueurs & aperitifs', 'Champagne & sparkling', 'Wine'],
@@ -113,7 +130,7 @@ return [
             'name' => 'Brewery, Beverages & Snacks',
             'short' => 'Beer, beverages & snacks',
             'code' => 'BB',
-            'photo' => 'bottling-line',
+            'photo' => 'division-beverages',
             'blurb' => 'Beer, stout, cider, malt, soft drinks, sports drinks, water and the confectionery and snacks that sell beside them.',
             'note' => 'Exclusive St Lucia distributor of Carib Brewery products (The Voice, August 2023); the Carib range joined in 2017.',
             'categories' => ['Beer & stout', 'Cider & shandy', 'Malt & tonic wine', 'Soft drinks', 'Juice', 'Water', 'Sports & energy', 'Confectionery', 'Snacks'],
@@ -125,7 +142,7 @@ return [
             'name' => 'Food, Household, Frozen & Personal Care',
             'short' => 'Food, household & personal care',
             'code' => 'FH',
-            'photo' => 'supermarket-aisle',
+            'photo' => 'division-food',
             'blurb' => 'Grocery, dairy, frozen, coffee and tea, cleaning and laundry, oral care and personal care for supermarkets, minimarts and caterers.',
             'note' => 'A distributor of Intersol\'s Diquez range since 1995, and one of two Intersol Distributor Achievement Award winners across nine territories in 2020 (The Voice, December 2020).',
             'categories' => ['Grocery', 'Dairy', 'Frozen', 'Coffee & tea', 'Household & cleaning', 'Laundry', 'Oral care', 'Personal care', 'Baby care', 'Vitamins'],
@@ -138,7 +155,7 @@ return [
             'name' => 'Pharmaceuticals',
             'short' => 'Pharmaceuticals',
             'code' => 'RX',
-            'photo' => 'pharmacy-shelves',
+            'photo' => 'division-pharmaceutical',
             'restricted' => true,
             'blurb' => 'Medicines, health and diagnostic products for licensed pharmacies, hospitals and clinics. Acado St. Lucia describes itself as the largest pharmaceutical distributor in St Lucia.',
             'note' => 'Supplied to licensed pharmacies and medical facilities only. We do not sell medicines to the public, and this range is not listed in the online catalogue.',
@@ -149,24 +166,32 @@ return [
     ],
 
     /*
-     * Photo sizes (largest WebP) for the width/height attributes. Files: public/img/{key}-{480,960,1920}.webp.
-     * Licences and authors: config/photo-credits.php.
+     * Photo sizes (largest WebP) for the width/height attributes. Files: public/img/{key}-{w}.webp
+     * at 480/960/1920 wide, or at the listed 'widths' for the company's own photos, which
+     * acadostlucia.com publishes smaller. Sources and licences: config/photo-credits.php.
      */
     'photos' => [
-        'castries-city-port' => ['w' => 1920, 'h' => 1280],
+        // The company's own photos, from acadostlucia.com.
+        'acado-team' => ['w' => 1366, 'h' => 768, 'widths' => [480, 960, 1366]],
+        'acado-vision' => ['w' => 1920, 'h' => 1080],
+        'acado-careers' => ['w' => 1920, 'h' => 1080],
+        'acado-careers-tablet' => ['w' => 1080, 'h' => 1080, 'widths' => [480, 1080]],
+        'division-wines-spirits' => ['w' => 500, 'h' => 500, 'widths' => [500]],
+        'division-food' => ['w' => 500, 'h' => 500, 'widths' => [500]],
+        'division-beverages' => ['w' => 500, 'h' => 500, 'widths' => [500]],
+        'division-pharmaceutical' => ['w' => 500, 'h' => 500, 'widths' => [500]],
+        'store-bridge-street' => ['w' => 1000, 'h' => 900, 'widths' => [480, 1000]],
+        'store-jq-mall' => ['w' => 1000, 'h' => 900, 'widths' => [480, 1000]],
+        'store-vieux-fort' => ['w' => 1000, 'h' => 900, 'widths' => [480, 1000]],
+        'store-bois-dorange' => ['w' => 1000, 'h' => 900, 'widths' => [480, 1000]],
+        'store-wet-cold' => ['w' => 1000, 'h' => 900, 'widths' => [480, 1000]],
+        // Wikimedia Commons, for the pages the company has no photo for yet.
         'castries-container-ship' => ['w' => 1920, 'h' => 1280],
         'castries-harbour' => ['w' => 1920, 'h' => 1268],
-        'cul-de-sac-terminal' => ['w' => 1920, 'h' => 600],
         'cul-de-sac-valley' => ['w' => 1920, 'h' => 1280],
         'pitons' => ['w' => 1920, 'h' => 1280],
         'marigot-bay' => ['w' => 1920, 'h' => 1222],
         'castries-market' => ['w' => 1920, 'h' => 1280],
-        'warehouse-racking' => ['w' => 1920, 'h' => 1496],
-        'bottling-line' => ['w' => 1920, 'h' => 1280],
-        'bar-shelf' => ['w' => 1920, 'h' => 1280],
-        'supermarket-aisle' => ['w' => 1920, 'h' => 1080],
-        'pharmacy-shelves' => ['w' => 1920, 'h' => 1280],
-        'personal-care-shelf' => ['w' => 1920, 'h' => 1080],
     ],
 
     'admin' => [

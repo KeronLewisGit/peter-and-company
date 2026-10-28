@@ -80,21 +80,37 @@ if (! function_exists('compact_number')) {
 
 if (! function_exists('photo')) {
     /**
-     * Responsive <img> attributes for a photo in public/img (WebP at 480/960/1920 wide).
+     * Responsive <img> attributes for a photo in public/img: WebP files at 480/960/1920 wide,
+     * or at the widths listed in the photo's metadata (for client photos smaller than 1920).
      *
      * @return array{src: string, srcset: string, width: int, height: int}
      */
     function photo(string $key): array
     {
         $meta = config('peterco.photos.'.$key) ?? ['w' => 1920, 'h' => 1280];
+        /** @var list<int> $widths */
+        $widths = $meta['widths'] ?? [480, 960, 1920];
         $url = fn (int $w) => asset("img/{$key}-{$w}.webp");
+        $src = collect($widths)->first(fn (int $w) => $w >= 960) ?? $widths[array_key_last($widths)];
 
         return [
-            'src' => $url(960),
-            'srcset' => $url(480).' 480w, '.$url(960).' 960w, '.$url(1920).' 1920w',
+            'src' => $url($src),
+            'srcset' => collect($widths)->map(fn (int $w) => $url($w).' '.$w.'w')->join(', '),
             'width' => (int) $meta['w'],
             'height' => (int) $meta['h'],
         ];
+    }
+}
+
+if (! function_exists('brand_logo')) {
+    /** URL of a brand's logo tile (as published on acadostlucia.com), or null when there is none. */
+    function brand_logo(?string $brand): ?string
+    {
+        // Not config('brand-logos.'.$brand): brand names such as "S.Pellegrino" contain dots.
+        $logos = (array) config('brand-logos', []);
+        $file = $brand === null ? null : ($logos[$brand] ?? null);
+
+        return is_string($file) ? asset('img/brands/'.$file.'.webp') : null;
     }
 }
 
