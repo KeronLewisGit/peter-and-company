@@ -21,14 +21,14 @@
                 @if ($overdueByType->isNotEmpty())
                     <p class="mt-3 flex flex-wrap gap-2">
                         @foreach ($overdueByType as $row)
-                            <a href="{{ route('admin.leads.index', ['overdue' => 1, 'type' => $row['type']->value]) }}" class="chip num min-h-8 hover:bg-line" data-tone="critical"><x-icon :name="$row['type']->icon()" />{{ $row['count'] }} {{ \Illuminate\Support\Str::lower($row['type']->label()) }}</a>
+                            <a href="{{ route('admin.leads.index', ['overdue' => 1, 'type' => $row['type']->value]) }}" class="chip num min-h-11 hover:bg-line" data-tone="critical"><x-icon :name="$row['type']->icon()" />{{ $row['count'] }} {{ \Illuminate\Support\Str::lower($row['type']->label()) }}</a>
                         @endforeach
                     </p>
                 @endif
             </div>
             <a href="{{ route('admin.leads.index', $overdueCount ? ['overdue' => 1] : ['status' => 'new']) }}" class="a-btn {{ $overdueCount ? 'a-btn-primary' : 'a-btn-ghost' }}">{{ $overdueCount ? 'Pick them up now' : 'Open new requests' }}<x-icon name="arrow-right" class="h-4 w-4" /></a>
         </div>
-        <div class="h-1.5 bg-[color:var(--stripe)]" aria-hidden="true"></div>
+        <div class="gradient-rule" aria-hidden="true"></div>
     </section>
 
     <div @class(['mt-6 grid gap-4 sm:grid-cols-2', 'xl:grid-cols-4' => count($tiles) === 4, 'xl:grid-cols-3' => count($tiles) === 3])>
@@ -59,7 +59,7 @@
                             data-label="{{ $d['date']->format('D j M') }}" data-value="{{ $d['count'] }}" tabindex="0" @mouseenter="show($el)" @focus="show($el)" @blur="hide()"><title>{{ $d['date']->format('D j M') }}: {{ $d['count'] }}</title></rect>
                     @endforeach
                 </svg>
-                <div x-show="tip" x-cloak class="pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-md bg-crate-900 px-2.5 py-1.5 text-xs font-semibold text-white shadow" :style="tip && `left:${tip.x}px; top:${tip.y - 6}px`"><span x-text="tip?.label"></span>: <span x-text="tip?.value"></span></div>
+                <div x-show="tip" x-cloak class="pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-md bg-navy-900 px-2.5 py-1.5 text-xs font-semibold text-white shadow" :style="tip && `left:${tip.x}px; top:${tip.y - 6}px`"><span x-text="tip?.label"></span>: <span x-text="tip?.value"></span></div>
                 <div class="mt-2 flex justify-between text-xs text-ink-3"><span>{{ $daily->first()['date']->format('j M') }}</span><span>Today</span></div>
             </div>
         </section>

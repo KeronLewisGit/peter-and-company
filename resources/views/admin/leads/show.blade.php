@@ -204,7 +204,7 @@
                 <ol class="mt-5 space-y-4 border-l-2 border-line pl-5">
                     @foreach ($lead->notes as $n)
                         <li class="relative">
-                            <span @class(['absolute -left-[1.6rem] top-1.5 h-2.5 w-2.5 rounded-sm', 'bg-[color:var(--stripe)]' => $n->kind === 'note', 'bg-[color:var(--series-1)]' => in_array($n->kind, ['status', 'assign', 'credit'], true), 'bg-line-strong' => in_array($n->kind, ['system', 'file'], true)]) aria-hidden="true"></span>
+                            <span @class(['absolute -left-[1.6rem] top-1.5 h-2.5 w-2.5 rounded-sm', 'bg-orange' => $n->kind === 'note', 'bg-[color:var(--series-1)]' => in_array($n->kind, ['status', 'assign', 'credit'], true), 'bg-line-strong' => in_array($n->kind, ['system', 'file'], true)]) aria-hidden="true"></span>
                             @if ($n->kind === 'credit' && ! $canSeeCredit)
                                 {{-- Credit decisions can carry limits and reference checks: credit control and admins only. --}}
                                 <p class="flex items-center gap-1.5 text-ink-2"><x-icon name="lock" class="h-4 w-4 flex-none" />Credit control recorded a decision{{ $lead->tradeAccount ? ' and opened account '.$lead->tradeAccount->number : '' }}.</p>
