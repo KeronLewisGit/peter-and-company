@@ -76,7 +76,7 @@
     "src": "_montserrat-700-normal-BdjcYUrC.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-B6q1cq3h.css",
+    "file": "assets/app-BQH5cbN5.css",
     "name": "app",
     "names": [
       "app.css"
@@ -85,7 +85,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-Bp_1YKwh.js",
+    "file": "assets/app--HmuqHjX.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
