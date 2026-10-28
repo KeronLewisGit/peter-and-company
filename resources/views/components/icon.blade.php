@@ -55,6 +55,7 @@ $paths = [
     'archive' => '<rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8M10 12h4"/>',
     'pause' => '<circle cx="12" cy="12" r="10"/><path d="M10 9v6M14 9v6"/>',
     'play' => '<path d="M7 4.5v15l12.5-7.5z"/>',
+    'cart' => '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h2.6l2.5 11.6a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 1.9-1.5L21.5 7H5.7"/>',
     'list' => '<path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
     'arrow-up' => '<path d="M12 19V5M6 11l6-6 6 6"/>',
     'pill' => '<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7zM8.5 8.5l7 7"/>',

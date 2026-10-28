@@ -123,7 +123,7 @@
             <button type="button" onclick="toggleTheme(event)" class="hidden h-11 w-11 flex-none items-center justify-center rounded-full text-ink-2 hover:bg-surface-2 hover:text-ink sm:inline-flex" aria-label="Switch light or dark theme">
                 <x-icon name="moon" class="h-5 w-5 dark-hide" /><x-icon name="sun" class="hidden h-5 w-5 dark-show" />
             </button>
-            <a href="{{ route('order.show') }}" data-order-target class="order-icon relative hidden h-11 w-11 flex-none items-center justify-center rounded-full bg-primary text-primary-ink shadow-sm transition hover:bg-[var(--primary-hover)] lg:inline-flex" title="Order list" @if(request()->routeIs('order.*')) aria-current="page" @endif><x-icon name="list" class="h-5 w-5" /><span class="sr-only">Order list, </span><span class="num absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-yellow px-1 text-[0.6875rem] font-bold leading-none text-navy ring-2 ring-surface" data-order-count>{{ $listCount }}</span><span class="sr-only"> lines</span></a>
+            <a href="{{ route('order.show') }}" data-order-target class="order-icon relative hidden h-11 w-11 flex-none items-center justify-center rounded-full bg-primary text-primary-ink shadow-sm transition hover:bg-[var(--primary-hover)] lg:inline-flex" title="Order list" @if(request()->routeIs('order.*')) aria-current="page" @endif><x-icon name="cart" class="h-5 w-5 -translate-x-px" /><span class="sr-only">Order list, </span><span class="num absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-yellow px-1 text-[0.6875rem] font-bold leading-none text-navy ring-2 ring-surface" data-order-count>{{ $listCount }}</span><span class="sr-only"> lines</span></a>
             <button type="button" class="menu-toggle inline-flex h-11 w-11 flex-none items-center justify-center rounded-full text-ink ring-1 ring-line-strong lg:hidden" @click="menu = !menu" :aria-expanded="menu.toString()" aria-controls="mobile-menu" aria-label="Menu">
                 <x-icon name="menu" x-show="!menu" /><x-icon name="x" x-show="menu" x-cloak />
             </button>
@@ -236,7 +236,7 @@
             <div class="flex gap-2">
                 @if ($phone)<a href="{{ tel_href($phone) }}" class="btn btn-outline flex-1 px-2 text-[0.875rem]"><x-icon name="phone" class="h-4 w-4" />Call</a>@endif
                 <a href="{{ route('catalogue') }}" class="btn btn-outline flex-1 px-2 text-[0.875rem]">Catalogue</a>
-                <a href="{{ route('order.show') }}" data-order-target class="btn btn-primary flex-[1.3] whitespace-nowrap px-2 text-[0.875rem]">Order list · <span data-order-count>{{ $listCount }}</span></a>
+                <a href="{{ route('order.show') }}" data-order-target class="btn btn-primary flex-[1.3] gap-1.5 whitespace-nowrap px-2 text-[0.875rem]"><x-icon name="cart" class="h-4 w-4" />Order list · <span data-order-count>{{ $listCount }}</span></a>
             </div>
         </nav>
     @endif
